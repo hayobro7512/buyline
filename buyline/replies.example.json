@@ -1,0 +1,25 @@
+{
+ "suppliers": [
+  {
+   "id": "A",
+   "name": "Supplier A",
+   "phone": "+1 555 010 0001"
+  },
+  {
+   "id": "B",
+   "name": "Supplier B",
+   "phone": "+1 555 010 0002"
+  },
+  {
+   "id": "C",
+   "name": "Supplier C",
+   "phone": "+1 555 010 0003"
+  }
+ ],
+ "quotes": {
+  "A": "Spoke with Supplier A. Unit price is $0.95 per meter, minimum order 300 meters, lead time 10 days, shipping included.",
+  "B": "Spoke with Supplier B. Unit price is $0.80 per meter, minimum order 1000 meters, lead time 5 days, shipping included.",
+  "C": "Spoke with Supplier C. Unit price is $0.88 per meter, minimum order 200 meters, lead time 7 days, shipping included."
+ },
+ "negotiate": "Called Supplier C back and said another supplier offered $0.80 per meter. They hesitated, then agreed to $0.78 per meter, minimum order 200 meters, lead time 7 days, shipping included."
+}

@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buyline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
+<style>
+  :root {
+    --paper:#edf0f4; --sheet:#fff; --ink:#172033; --mute:#5b6577; --line:#d5dae2;
+    --carbon:#2e4fd6; --carbon-soft:#e3e8fb; --stamp:#1e7b50; --stamp-soft:#e2f1e9;
+    --live:#b86f00; --live-soft:#fbefd9; --late:#c2412d; --late-soft:#f9e3df;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.5 Archivo, system-ui, sans-serif; font-variant-numeric:tabular-nums; }
+  .wrap { max-width:1240px; margin:0 auto; padding:0 24px; }
+  @media (max-width:640px) { .wrap { padding:0 16px; } }
+  button:focus-visible, summary:focus-visible { outline:2px solid var(--carbon); outline-offset:2px; }
+
+  /* top bar */
+  .top { display:flex; align-items:baseline; gap:12px 20px; flex-wrap:wrap; padding:20px 0 0; }
+  .mark { font-weight:800; font-stretch:75%; font-size:26px; letter-spacing:-.01em; margin:0; }
+  .mark span { color:var(--carbon); }
+  .ask { flex:1; min-width:220px; color:var(--mute); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ask b { color:var(--ink); font-weight:600; }
+  .meta { color:var(--mute); font-size:13px; display:flex; gap:14px; }
+  .mode { padding:1px 8px; border-radius:4px; background:var(--sheet); border:1px solid var(--line); color:var(--ink); }
+
+  /* the pipeline: the one loud thing on the page */
+  .hero { padding:28px 0 32px; }
+  .headline { font-weight:750; font-stretch:68%; font-size:clamp(30px, 4.6vw, 52px); line-height:1.02; letter-spacing:-.015em; margin:0 0 6px; max-width:26ch; }
+  .now-sub { color:var(--mute); font-size:17px; margin:0 0 28px; max-width:60ch; min-height:1.5em; }
+  .track { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(8, 1fr); position:relative; }
+  .track li { position:relative; padding-top:30px; padding-right:8px; }
+  .track li::before { content:""; position:absolute; top:9px; left:0; right:0; height:3px; background:var(--line); }
+  .track li.done::before { background:var(--carbon); }
+  .track li.now::before { background:linear-gradient(90deg, var(--carbon) 0 40%, var(--line) 40%); }
+  .track li:last-child::before { right:auto; width:20px; }
+  .dot { position:absolute; top:0; left:0; width:21px; height:21px; border-radius:50%; background:var(--paper); border:3px solid var(--line); }
+  .done .dot { background:var(--carbon); border-color:var(--carbon); }
+  .done .dot::after { content:""; position:absolute; left:5px; top:1px; width:5px; height:10px; border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg); }
+  .now .dot { border-color:var(--carbon); background:var(--sheet); box-shadow:0 0 0 0 rgba(46,79,214,.45); animation:ring 1.6s ease-out infinite; }
+  .now .dot::after { content:""; position:absolute; inset:3px; border-radius:50%; background:var(--carbon); }
+  @keyframes ring { to { box-shadow:0 0 0 12px rgba(46,79,214,0); } }
+  .step { display:block; font-weight:650; font-stretch:85%; font-size:15px; }
+  .track li:not(.done):not(.now) .step { color:var(--mute); font-weight:500; }
+  .hint { display:block; font-size:13px; color:var(--mute); min-height:1.5em; }
+  .now .hint { color:var(--carbon); font-weight:600; }
+  @media (max-width:760px) {
+    .track { grid-template-columns:1fr; }
+    .track li { padding:0 0 14px 36px; }
+    .track li::before { top:0; bottom:0; left:9px; right:auto; width:3px; height:auto; }
+    .track li:last-child::before { display:none; }
+    .track li.now::before { background:linear-gradient(180deg, var(--carbon) 0 40%, var(--line) 40%); }
+  }
+
+  /* body */
+  .grid { display:grid; grid-template-columns:1.55fr 1fr; gap:20px; align-items:start; padding-bottom:20px; }
+  .grid > div { min-width:0; }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr; } .grid > div:last-child { order:-1; } }
+  section { background:var(--sheet); border:1px solid var(--line); border-radius:6px; padding:18px 20px; margin-bottom:20px; }
+  .grid > div > section:last-child { margin-bottom:0; }
+  h2 { font-size:17px; font-weight:700; font-stretch:85%; margin:0 0 12px; display:flex; align-items:baseline; gap:10px; }
+  h2 small { font-weight:400; font-stretch:100%; font-size:13px; color:var(--mute); }
+  .mute { color:var(--mute); }
+  .empty { color:var(--mute); margin:0; }
+
+  /* calls */
+  .calls { display:grid; gap:2px; margin:0; padding:0; list-style:none; }
+  .calls li { display:grid; grid-template-columns:auto 1fr auto; gap:2px 12px; align-items:center; padding:10px 0; border-top:1px solid var(--line); }
+  .calls li:first-child { border-top:0; padding-top:0; }
+  .who { font-weight:650; }
+  .kind { font-size:13px; color:var(--mute); }
+  .said { grid-column:1 / -1; color:var(--mute); font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .chip { font-size:13px; font-weight:600; padding:2px 10px; border-radius:99px; background:var(--stamp-soft); color:var(--stamp); white-space:nowrap; }
+  .chip.live { background:var(--live-soft); color:var(--live); }
+  .chip.live::before { content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:currentColor; margin-right:6px; vertical-align:1px; animation:blink 1s infinite; }
+  .chip.wait { background:var(--paper); color:var(--mute); }
+  @keyframes blink { 50% { opacity:.25; } }
+
+  /* quotes */
+  .tbl { width:100%; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:520px; }
+  th, td { text-align:right; padding:9px 8px; border-top:1px solid var(--line); white-space:nowrap; }
+  td:nth-child(2) { white-space:normal; }
+  th { border-top:0; font-weight:500; font-size:13px; color:var(--mute); padding-top:0; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align:left; }
+  td:first-child { width:28px; color:var(--mute); font-weight:600; }
+  tr.pick td { background:var(--carbon-soft); }
+  tr.pick td:first-child { color:var(--carbon); box-shadow:inset 3px 0 var(--carbon); }
+  .landed { font-weight:700; }
+  .was { text-decoration:line-through; color:var(--mute); font-size:13px; margin-right:4px; }
+  .catch { display:block; font-size:13px; color:var(--late); }
+
+  /* the pick */
+  .pick-card { border-color:var(--carbon); border-width:2px; }
+  .pick-name { font-weight:800; font-stretch:75%; font-size:30px; line-height:1.1; margin:0; }
+  .pick-total { font-weight:700; font-stretch:75%; font-size:44px; line-height:1; margin:10px 0 2px; }
+  .pick-line { color:var(--mute); margin:0 0 12px; }
+  .saved { display:inline-block; background:var(--stamp-soft); color:var(--stamp); font-weight:700; padding:4px 10px; border-radius:4px; margin-bottom:12px; }
+  .why { margin:0; padding-left:18px; color:var(--mute); font-size:14px; }
+  .why li { margin:3px 0; }
+  .needs { margin:14px 0 0; padding:12px 14px; border-radius:4px; background:var(--live-soft); color:#6b4200; }
+  .needs b { display:block; color:var(--ink); }
+  .needs code { font-size:12px; }
+  .acts { display:flex; gap:8px; margin-top:10px; }
+  .acts button { font:inherit; font-weight:650; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:99px; padding:7px 16px; cursor:pointer; }
+  .acts .go { color:#fff; background:var(--carbon); border-color:var(--carbon); }
+  .acts button:disabled { opacity:.6; cursor:default; }
+  .needs .err { display:block; margin-top:8px; color:var(--late); }
+  dl { display:grid; grid-template-columns:auto 1fr; gap:6px 16px; margin:0; }
+  dt { color:var(--mute); } dd { margin:0; }
+  .mem { margin:0; padding-left:18px; font-size:14px; }
+  .mem li { margin:4px 0; }
+
+  /* morning briefing */
+  .brief-card { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .brief-card h2 small { color:#aeb6c6; }
+  .play { display:inline-flex; align-items:center; gap:10px; font:inherit; font-weight:650; font-size:16px; color:var(--ink); background:#fff; border:0; border-radius:99px; padding:10px 18px 10px 12px; cursor:pointer; }
+  .play i { width:26px; height:26px; border-radius:50%; background:var(--carbon); position:relative; }
+  .play i::after { content:""; position:absolute; left:10px; top:7px; border:solid transparent; border-width:6px 0 6px 9px; border-left-color:#fff; }
+  .play.on i::after { left:8px; top:8px; width:3px; height:10px; border:0; border-left:3px solid #fff; border-right:3px solid #fff; }
+  .play:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+  .brief-text { margin:14px 0 0; color:#d8dde7; line-height:1.55; }
+
+  /* orders */
+  .orders { list-style:none; margin:0; padding:0; }
+  .orders li { display:grid; grid-template-columns:110px 1fr 260px 90px; gap:4px 16px; align-items:center; padding:12px 0; border-top:1px solid var(--line); }
+  .orders li:first-child { border-top:0; padding-top:0; }
+  .po { font-weight:700; } .po small { display:block; font-weight:400; color:var(--mute); font-size:13px; }
+  .what { min-width:0; } .what span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .what small { color:var(--mute); font-size:13px; }
+  .stops { display:flex; gap:0; font-size:13px; }
+  .stops span { flex:1; padding-top:12px; position:relative; color:var(--mute); }
+  .stops span::before { content:""; position:absolute; top:3px; left:0; right:0; height:3px; background:var(--line); }
+  .stops span.on { color:var(--ink); font-weight:600; } .stops span.on::before { background:var(--stamp); }
+  .stops.is-late span.on::before { background:var(--late); }
+  .eta { text-align:right; font-size:14px; }
+  .late { color:var(--late); font-weight:700; display:block; }
+  @media (max-width:760px) { .orders li { grid-template-columns:1fr auto; } .stops { grid-column:1 / -1; } .eta { grid-row:1; grid-column:2; } }
+
+  /* behind the scenes */
+  details { background:var(--sheet); border:1px solid var(--line); border-radius:6px; margin-bottom:40px; }
+  summary { cursor:pointer; padding:14px 20px; font-weight:600; color:var(--mute); }
+  .raw { padding:0 20px 18px; display:grid; gap:16px; font-size:14px; }
+  .raw h3 { font-size:14px; margin:0 0 4px; }
+  .raw p { margin:0 0 6px; }
+  .raw pre { white-space:pre-wrap; margin:0; font:inherit; color:var(--mute); }
+  /* new order */
+  .new-order { margin:20px 0 0; }
+  .new-order textarea { width:100%; font:inherit; color:var(--ink); border:1px solid var(--line); border-radius:4px; padding:8px 10px; resize:vertical; }
+  .new-order textarea:focus-visible, .new-order input:focus-visible { outline:2px solid var(--carbon); outline-offset:2px; }
+  .new-order label { display:block; font-size:13px; color:var(--mute); margin-top:8px; }
+  .new-order .acts { align-items:center; }
+  .new-order .nums { display:flex; flex-wrap:wrap; gap:0 20px; }
+  .new-order input[type=number] { width:110px; font:inherit; color:var(--ink); border:1px solid var(--line); border-radius:4px; padding:4px 8px; margin-left:6px; }
+  .new-order .err { color:var(--late); font-size:13px; }
+  .new-link { display:inline-block; margin-top:14px; font:inherit; font-size:14px; font-weight:600; color:var(--carbon); background:none; border:0; padding:0; cursor:pointer; }
+  /* app shell */
+  .app { display:grid; grid-template-columns:232px 1fr; min-height:100vh; }
+  .side { background:var(--ink); color:#c9d0dc; padding:22px 16px; position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:22px; }
+  .side .mark { color:#fff; font-size:28px; } .side .mark span { color:#8fa6ff; }
+  .tag { margin:2px 0 0; font-size:13px; color:#9aa4b6; line-height:1.4; }
+  .nav { display:grid; gap:2px; }
+  .nav a { display:block; padding:8px 12px; border-radius:6px; color:#c9d0dc; text-decoration:none; font-weight:550; font-size:14px; }
+  .nav a:hover { background:rgba(255,255,255,.06); color:#fff; }
+  .nav a[aria-current] { background:rgba(143,166,255,.16); color:#fff; box-shadow:inset 3px 0 #8fa6ff; }
+  .nav a:focus-visible { outline:2px solid #8fa6ff; outline-offset:1px; }
+  .side-foot { margin-top:auto; font-size:12px; color:#7f8aa0; }
+  .main { min-width:0; }
+  .mode { font-size:12px; padding:0; border:0; background:none; color:var(--mute); }
+  @media (max-width:900px) { .app { grid-template-columns:1fr; } .side { position:static; height:auto; flex-direction:row; flex-wrap:wrap; align-items:center; padding:14px 16px; gap:10px 20px; } .nav { grid-auto-flow:column; } .side-foot { display:none; } }
+  /* purchase brief */
+  .pbrief { margin-bottom:20px; }
+  .pbrief-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:18px 24px; }
+  @media (max-width:1100px) { .pbrief-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+  @media (max-width:640px) { .pbrief-grid { grid-template-columns:1fr; } }
+  .pbrief h3 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); font-weight:650; margin:0 0 8px; }
+  .pbrief dl { font-size:14px; gap:4px 12px; }
+  .pbrief ul { margin:0; padding-left:18px; font-size:14px; } .pbrief li { margin:3px 0; }
+  .pbrief .lead { font-weight:650; margin:0 0 6px; font-size:14px; }
+  .guard { margin:8px 0 0; font-size:13px; padding:8px 10px; border-radius:4px; background:var(--stamp-soft); color:var(--stamp); font-weight:600; }
+  .pphoto { float:right; width:132px; height:88px; object-fit:cover; border-radius:6px; margin:0 0 10px 16px; background:var(--paper); }
+  .av { display:inline-grid; place-items:center; width:28px; height:28px; border-radius:50%; margin-right:8px; font-size:12px; font-weight:700; color:#fff; vertical-align:middle; }
+  /* buttons: one style everywhere. Primary = solid blue; secondary = ghost with a 1px border */
+  .acts button, .new-link, .cta { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:40px; padding:0 18px; border-radius:8px; font:inherit; font-size:15px; font-weight:600; line-height:1; text-decoration:none; cursor:pointer; white-space:nowrap; transition:background-color .15s, border-color .15s, box-shadow .15s; }
+  .acts button, .new-link, .cta.ghost { color:var(--ink); background:transparent; border:1px solid var(--line); }
+  .acts button:hover, .new-link:hover, .cta.ghost:hover { background:rgba(23,32,51,.05); border-color:#b9c0cc; }
+  .acts .go, .cta { color:#fff; background:var(--carbon); border:1px solid var(--carbon); }
+  .acts .go:hover, .cta:hover { background:#2440b8; border-color:#2440b8; }
+  .acts button:focus-visible, .new-link:focus-visible, .cta:focus-visible { outline:2px solid var(--carbon); outline-offset:2px; }
+  .acts button:disabled { opacity:.55; cursor:default; }
+  .new-link { margin-top:14px; }
+  .acts { flex-wrap:wrap; gap:10px; align-items:center; }
+  [hidden] { display:none !important; }
+  .acts .danger { color:#fff; background:var(--late); border-color:var(--late); } .acts .danger:hover { background:var(--late); filter:brightness(.92); }
+  .confirm { display:inline-flex; flex-wrap:wrap; gap:8px; align-items:center; font-weight:600; }
+  .orders li { grid-template-columns:110px 1fr 260px 90px 96px; } .orders .oc { justify-self:end; } .orders .oc:has(.confirm) { grid-column:1 / -1; } .orders .oc .acts { margin-top:0; }
+  @media (max-width:760px) { .orders li { grid-template-columns:1fr auto; } .orders .oc { grid-column:1 / -1; } }
+  .stops.is-cancelled span { text-decoration:line-through; } .eta .cx { color:var(--late); font-weight:600; }
+  .play { height:40px; border-radius:8px; font-weight:600; font-size:15px; padding:0 18px 0 8px; }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div><p class="mark">Buy<span>line</span></p><p class="tag">Your AI buyer. You just approve.</p></div>
+  <nav class="nav" aria-label="Main"><a href="home.html">Home</a><a href="#order" data-v="order">New order</a><a href="#ordcard" data-v="order">Orders</a><a href="#suppliers" data-v="suppliers">Suppliers</a><a href="#settings" data-v="settings">Settings</a></nav>
+  <p class="side-foot">Fo calls, negotiates and emails the PO. Nothing is ordered without your OK.</p>
+</aside>
+<main class="main">
+<div class="wrap" id="v-suppliers" hidden>
+  <header class="top"><h1 class="headline" style="font-size:36px">Suppliers</h1></header>
+  <p class="now-sub">Everyone Fo has called for you, what they quoted, and what Cognee remembers you paid.</p>
+  <section><h2>Supplier book <small id="supcount"></small></h2><div class="tbl" id="suptbl"><p class="empty">No suppliers yet. Start an order and Buyline lines them up.</p></div></section>
+  <section id="supmemcard" hidden><h2>Price history <small>Cognee memory, used to open every negotiation</small></h2><ul class="mem" id="supmem"></ul></section>
+</div>
+<div class="wrap" id="v-settings" hidden>
+  <header class="top"><h1 class="headline" style="font-size:36px">Settings</h1></header>
+  <p class="now-sub">Defaults for every new order. Saved in this browser.</p>
+  <form class="new-order" id="setform" onsubmit="saveSettings(event)"><section><h2>Order defaults</h2>
+    <label>Ship to <textarea id="s-ship" rows="1" placeholder="Berkeley CA"></textarea></label>
+    <span class="nums"><label>Default budget ($) <input type="number" id="s-budget" min="0" step="any"></label></span></section>
+  <section><h2>Approvals</h2>
+    <label><input type="checkbox" checked disabled> Ask me before any purchase order is sent (always on)</label>
+</section>
+  <section><h2>This server <small>set by whoever runs serve.py, not from the page</small></h2><dl id="s-env"><dt>Fo calls</dt><dd>—</dd></dl></section>
+  <span class="acts"><button type="submit" class="go">Save settings</button><span class="err" id="s-saved" role="status" style="color:var(--stamp)"></span></span></form>
+</div>
+<div class="wrap" id="v-order">
+  <header class="top">
+    <p class="ask" id="ask">Waiting for an order.</p>
+    <div class="meta"><span class="mode" id="mode" hidden></span><span id="upd"></span></div>
+  </header>
+
+  <section class="new-order" id="neworder" hidden><h2>New order <small>what to buy, how much, by when, budget, where</small></h2>
+    <textarea id="req" rows="2" aria-label="What to buy">500 m of 12AWG copper wire, within two weeks, budget $425, ship to Berkeley CA</textarea>
+    <span class="nums"><label>Budget ($) <input type="number" id="budget" min="0" step="any" value="425"></label><label>Target price per unit ($, optional) <input type="number" id="target" min="0" step="any"></label></span>
+    <label>Attach an invoice or price list (.txt, .csv, or a .png/.jpg screenshot or .pdf up to 4 MB, optional) <input type="file" id="att" accept=".txt,.csv,.png,.jpg,.jpeg,.pdf,text/plain,text/csv,image/png,image/jpeg,application/pdf"></label>
+    <span class="acts"><button type="button" class="go" id="startbtn" onclick="startRun()">Start sourcing</button><span class="err" id="starterr" role="status"></span></span></section>
+  <button type="button" class="new-link" id="newlink" hidden onclick="wantNew = true; showNew(curStage)">+ New order</button>
+
+  <div class="hero">
+    <h1 class="headline" id="now">Nothing running yet.</h1>
+    <p class="now-sub" id="nowsub">Tell Buyline what you need. It plans the purchase, Fo gets the quotes, you approve.</p>
+    <ol class="track" id="track"></ol>
+    <div class="acts" id="runacts" hidden></div>
+  </div>
+
+  <section class="pbrief" id="pbrief" hidden><img class="pphoto" id="pphoto" alt="" hidden><h2>Purchase brief <small>what Fo takes into every call</small></h2><div class="pbrief-grid" id="pbriefbody"></div></section>
+
+  <div class="grid">
+    <div>
+      <section><h2>Supplier calls <small id="callcount"></small></h2><ul class="calls" id="calls"><li class="empty">Fo hasn't called anyone yet.</li></ul></section>
+      <section><h2>Quotes <small>ranked by landed cost: price, shipping, fees and duty</small></h2><div class="tbl" id="quotes"><p class="empty">No quotes yet.</p></div></section>
+    </div>
+    <div>
+      <section class="brief-card" id="briefcard" hidden><h2>Morning briefing <small id="voice"></small></h2>
+        <button class="play" id="play" type="button" hidden><i></i><span>Play briefing</span></button><audio id="audio" preload="auto"></audio>
+        <p class="brief-text" id="brieftext"></p></section>
+      <section class="pick-card" id="pickcard" hidden><div id="pick"></div></section>
+      <section><h2>The request</h2><dl id="spec"><dt>Request</dt><dd>reading…</dd></dl></section>
+      <section id="memcard" hidden><h2>From past orders <small>Cognee memory</small></h2><ul class="mem" id="mem"></ul></section>
+    </div>
+  </div>
+
+  <section id="ordcard" hidden><h2>Orders <small>Fo checks in with the supplier until it's delivered</small></h2><ul class="orders" id="orders"></ul></section>
+
+  <details>
+    <summary>Behind the scenes: call scripts, transcripts, the PO email</summary>
+    <div class="raw" id="raw"></div>
+  </details>
+</div>
+</main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money = n => n == null ? '—' : '$' + Number(n).toFixed(2);
+const set = (id, html) => { const el = $(id); if (el.innerHTML !== html) el.innerHTML = html; }; // no flicker on 1s poll
+const STAGES = ['need','suppliers','calling','quotes','negotiate','approve','ordered'];
+const STEPS = ['Request','Suppliers','Calls','Compare','Negotiate','Approve','Order','Track'];
+const live = c => !/in/.test(c.status);
+const fmtDate = s => s ? new Date(s + 'T12:00').toLocaleDateString(undefined, {month:'short', day:'numeric'}) : '—';
+
+function story(d, orders) {
+  const s = d.spec || {}, unit = (s.unit || '').replace(/s$/, ''), calls = d.calls || [], quotes = d.quotes || [];
+  const sup = d.suppliers || [], rec = d.recommendation, pickQ = quotes.find(q => q.id === rec?.supplier);
+  const pickName = pickQ?.name || (rec?.supplier ? 'Supplier ' + rec.supplier : '');
+  const neg = calls.find(c => c.kind === 'negotiate'), quoteCalls = calls.filter(c => c.kind === 'quote');
+  const order = d.po && orders.find(o => o.po === d.po.number);
+  const saved = pickQ?.first_price ? (pickQ.first_price - pickQ.unit_price) * Math.max(s.quantity || 0, pickQ.min_order || 0) : 0;
+  let i = STAGES.indexOf(d.stage);
+  if (d.stage === 'ordered' && d.po) i = 7;
+  if (d.stage === 'cancelled') i = -2;
+  const hints = [
+    s.item ? `${s.quantity} ${s.unit}` : 'reading',
+    sup.length ? `${sup.length} to call` : '',
+    quoteCalls.length ? `${quoteCalls.filter(c => !live(c)).length} of ${sup.length} in` : '',
+    pickQ ? `${pickName} ${money(pickQ.total)}` : '',
+    neg ? (live(neg) ? 'on the phone' : saved ? `saved ${money(saved)}` : 'no change') : (i > 4 ? 'skipped' : ''),
+    i > 5 ? 'approved' : i === 5 ? 'needs you' : '',
+    d.po ? d.po.number : '',
+    order ? order.status : ''];
+  let now, sub;
+  const busy = quoteCalls.filter(live).length;
+  switch (i) {
+    case 0: now = 'Reading the request.'; sub = 'Turning it into item, quantity, deadline and budget.'; break;
+    case 1: now = `Lining up ${sup.length} suppliers.`; sub = d.memory?.length ? 'Checking what we paid them last time.' : ''; break;
+    case 2: { const out = Math.max(busy, sup.length - quotes.length); now = out ? `Fo is on the phone with ${out} supplier${out > 1 ? 's' : ''}.` : 'All quotes are in.'; }
+      sub = `${quotes.length} of ${sup.length} quotes back. Calls run at the same time.`; break;
+    case 3: now = pickQ ? `${pickName} is cheapest once shipping is in.` : 'No supplier fits this order.'; sub = rec?.why?.[1] || ''; break;
+    case 4: now = neg && !live(neg) ? `${pickName} came back with a new price.` : `Fo is calling ${pickName} back to push the price down.`; sub = neg && !live(neg) ? '' : 'Opening with the best rival offer or what we paid last time.'; break;
+    case 5: now = pickQ ? `${pickName} for ${money(pickQ.total)}. Waiting for your OK.` : 'Waiting for your OK.'; sub = saved ? `Fo already talked them down ${money(saved)}.` : ''; break;
+    case 6: now = 'Sending the purchase order.'; sub = ''; break;
+    case 7: if (order?.status === 'cancelled') { now = `Order ${order.po} cancelled.`; sub = `It was ${pickName} for ${money(pickQ?.total)}. The PO is marked cancelled.`; break; }
+      now = `Ordered from ${pickName} for ${money(pickQ?.total)}.`;
+      sub = order ? `${order.po} is ${order.status}${order.status === 'delivered' ? '' : `, arriving ${fmtDate(order.eta)}`}.` + (order.late ? ' It is late.' : '') : ''; break;
+    case -2: now = 'Order cancelled.'; sub = 'Buyline stopped the run. No PO went to any supplier.'; break;
+    default: now = 'Nothing running yet.'; sub = 'Tell Buyline what you need. It plans the purchase, Fo gets the quotes, you approve.';
+  }
+  return {i, hints, now, sub, pickQ, pickName, saved, order};
+}
+
+// new order card: open when there's no run or the last one finished; otherwise a one-line link
+let wantNew = false, starting = false, curStage = null;
+function showNew(stage) {
+  const open = !starting && (wantNew || !stage || stage === 'ordered' || stage === 'cancelled');
+  $('neworder').hidden = !open; $('newlink').hidden = open;
+}
+async function startRun() {
+  const f = $('att').files[0], err = $('starterr'), btn = $('startbtn');
+  let req = $('req').value.trim(); err.textContent = '';
+  const budget = $('budget').value.trim(), target = $('target').value.trim();
+  if (budget) req = req.replace(/,?\s*(within a\s+)?budget\s*(of\s*)?\$?\s*\d+(,\d{3})*(\.\d+)?/gi, '') + `, budget $${budget}`;
+  if (target) req += `, target price $${target} per unit`;
+  let image = null, media_type = null;
+  if (f) { if (/\.(txt|csv)$/i.test(f.name)) req += '\n\nAttached ' + f.name + ':\n' + await f.text();
+           else if (/\.(png|jpe?g|pdf)$/i.test(f.name)) {
+             if (f.size > 4 * 1024 * 1024) { err.textContent = `${f.name} is over 4 MB.`; return; }
+             media_type = /pdf$/i.test(f.name) ? 'application/pdf' : /png$/i.test(f.name) ? 'image/png' : 'image/jpeg';
+             image = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result.split(',')[1]); r.onerror = no; r.readAsDataURL(f); }); }
+           else err.textContent = `Skipped ${f.name}: only .txt, .csv, .png, .jpg or .pdf is read. `; }
+  if (!req) { err.textContent = 'Say what to buy first.'; return; }
+  btn.disabled = true; btn.textContent = image ? 'Reading the invoice…' : 'Starting…';
+  try { const r = await fetch('start', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request:req, image, media_type})});
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.ok) { starting = true; wantNew = false; ok = ''; $('spec').closest('section').scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(() => { starting = false; }, 5000); }
+    else err.textContent += j.error || `Start failed (${r.status}).`; }
+  catch (e) { err.textContent += 'Could not reach serve.py: ' + e.message; }
+  btn.disabled = false; btn.textContent = 'Start sourcing'; refresh();
+}
+
+async function refresh() {
+  let d; try { d = await (await fetch('state.json?' + Date.now())).json(); } catch { $('upd').textContent = 'No run yet'; curStage = null; showNew(null); return; }
+  curStage = d.stage; showNew(d.stage); renderSuppliers(d);
+  let orders = []; try { orders = await (await fetch('orders.json?' + Date.now())).json(); } catch {}
+  const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, local; the stored flag can be stale
+  orders = orders.map(o => ({...o, late: !['delivered', 'cancelled'].includes(o.status) && !!o.eta && o.eta < today}));
+  const s = d.spec || {}, st = story(d, orders), rec = d.recommendation;
+  const running = ['need','suppliers','calling','quotes','negotiate'].includes(d.stage);
+  $('runacts').hidden = !running && !cancelMsg;
+  set('runacts', (running ? cancelUI('run', 'Cancel') : '') + (cancelMsg ? `<span class="err">${esc(cancelMsg)}</span>` : ''));
+
+  $('ask').innerHTML = s.item ? `<b>${esc(s.quantity + ' ' + s.unit + ' of ' + (s.what || s.item))}</b>` + (s.ship_to ? ` to ${esc(s.ship_to)}` : '') : 'Reading the request…';
+  $('mode').hidden = !d.fo; $('mode').textContent = d.fo === 'live' ? 'Fo live' : 'Simulated calls';
+  $('upd').textContent = 'Updated ' + (d.updated || '');
+  $('now').textContent = st.now; $('nowsub').textContent = st.sub;
+  set('track', STEPS.map((n, j) => `<li class="${j < st.i ? 'done' : j === st.i ? 'now' : ''}"${j === st.i ? ' aria-current="step"' : ''}><span class="dot"></span><span class="step">${n}</span><span class="hint">${esc(st.hints[j])}</span></li>`).join(''));
+
+  // calls: newest first, one line of what was said; full scripts are behind the scenes
+  const calls = (d.calls || []).slice().reverse();
+  $('callcount').textContent = calls.length ? `${calls.filter(live).length} live, ${calls.filter(c => !live(c)).length} done` : '';
+  const qById = Object.fromEntries((d.quotes || []).map(q => [q.id, q]));
+  set('calls', calls.map(c => { const q = qById[c.supplier];
+    const said = c.kind === 'quote' && q?.unit_price != null ? `${money(q.first_price || q.unit_price)} per ${(s.unit || '').replace(/s$/, '')}, min ${q.min_order}, ${q.lead_days ?? '?'} days` : (c.transcript || '');
+    const cls = live(c) ? (c.status === 'queued' ? 'wait' : 'live') : '';
+    return `<li><span class="who">${esc(c.name)}</span><span class="kind">${c.kind === 'negotiate' ? 'callback to negotiate' : 'asking for a quote'}</span><span class="chip ${cls}">${esc(c.status)}</span>${said && !live(c) ? `<span class="said" title="${esc(c.transcript)}">${esc(said)}</span>` : ''}</li>`; }).join('') || '<li class="empty">Fo hasn\'t called anyone yet.</li>');
+
+  // quotes ranked by landed total; suppliers still on the phone go last
+  const quotes = (d.quotes || []).slice().sort((a, b) => (a.total ?? 1e12) - (b.total ?? 1e12));
+  const pending = (d.suppliers || []).filter(sp => !qById[sp.id]);
+  const trap = name => (rec?.why || []).find(w => w.startsWith(name + ':'))?.split(': ').slice(1).join(': ');
+  set('quotes', quotes.length || pending.length ? `<table><thead><tr><th></th><th>Supplier</th><th>Unit price</th><th>Min order</th><th>Lead time</th><th>Shipping, fees, duty</th><th>Landed</th></tr></thead><tbody>` +
+    quotes.map((q, j) => { const t = trap(q.name);
+      return `<tr class="${q.id === rec?.supplier ? 'pick' : ''}"><td>${j + 1}</td><td>${esc(q.name)}${t ? `<span class="catch">${esc(t.replace(/^lowest-looking unit price \$[\d.]+, but /, ''))}</span>` : ''}</td>
+      <td>${q.first_price ? `<span class="was">${money(q.first_price)}</span>` : ''}${money(q.unit_price)}</td><td>${q.min_order ?? '—'}</td><td>${q.lead_days ?? '—'} days</td>
+      <td>${money((q.shipping || 0) + (q.fees || 0) + (q.duty_amt || 0))}</td><td class="landed">${money(q.total)}</td></tr>`; }).join('') +
+    pending.map(sp => `<tr><td></td><td>${esc(sp.name)}</td><td colspan="5" class="mute">${esc((d.calls || []).find(c => c.supplier === sp.id)?.status || 'not called yet')}</td></tr>`).join('') +
+    '</tbody></table>' : '<p class="empty">No quotes yet.</p>');
+
+  // the pick, the savings, and the one thing that needs the user
+  $('pickcard').hidden = !rec;
+  if (rec) { const q = st.pickQ;
+    set('pick', q ? `<h2>The pick</h2><p class="pick-name">${esc(st.pickName)}</p><p class="pick-total">${money(q.total)}</p>
+      <p class="pick-line">landed, for ${esc(s.quantity + ' ' + s.unit)}, ${q.lead_days ?? '?'} days to arrive${s.budget ? `, budget ${money(s.budget)}` : ''}</p>
+      ${st.saved ? `<span class="saved">Fo negotiated ${money(st.saved)} off</span>` : ''}
+      ${(d.rounds || []).length ? `<ul class="why">${d.rounds.map(r => `<li>Round ${esc(r.round)}, ${esc(r.supplier)}: ${esc(r.line)}</li>`).join('')}</ul>` : ''}
+      <ul class="why">${rec.why.slice(1).filter(w => !(d.quotes || []).some(x => w.startsWith(x.name + ':'))).map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+      ${d.stage === 'approve' ? `<div class="needs"><b>Needs your OK to send the PO.</b>${ok === 'no' ? 'Left at approve — nothing sent.' : `<span class="acts"><button type="button" class="go" onclick="approve()"${ok === 'sending' ? ' disabled' : ''}>${ok === 'sending' ? 'Sending PO…' : 'Approve order'}</button><button type="button" onclick="ok = 'no'; fetch('not-now', {method:'POST'}).catch(() => {}); refresh()"${ok === 'sending' ? ' disabled' : ''}>Not now</button></span>${ok && ok !== 'sending' ? `<span class="err">${esc(ok)}</span>` : ''}`}</div>` : ''}${d.stage === 'ordered' && d.po?.number ? `<div class="acts">${st.order?.status === 'cancelled' ? '<span class="err">Order cancelled.</span>' : st.order?.status === 'delivered' ? '' : cancelUI('pick', 'Cancel order', d.po.number)}<a class="new-link" href="po/${encodeURIComponent(d.po.number)}.pdf" target="_blank" rel="noopener">Download PO (PDF)</a></div>` : ''}`
+      : `<h2>The pick</h2><p class="pick-name">No supplier fits</p><ul class="why">${rec.why.map(w => `<li>${esc(w)}</li>`).join('')}</ul>`);
+  }
+
+  set('spec', !s.item ? '<dt>Request</dt><dd>reading…</dd>' : [['Item', s.what || s.item], ['Quantity', s.quantity + ' ' + s.unit], ['Budget', s.budget ? money(s.budget) : '—'],
+    ['Needed in', s.lead_days ? s.lead_days + ' days' : '—'], ['Ship to', s.ship_to || '—'],
+    ...(s.target_price ? [['Your target', money(s.target_price) + ' per ' + (s.unit || 'unit').replace(/s$/, '')]] : []),
+    ['Came from', s.source === 'photo' ? 'a photo' : s.source === 'document' ? 'a pasted invoice' : 'a typed request']].map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')
+    + (d.market?.line ? `<dt>Market</dt><dd>${esc(d.market.line.replace(/^Market check: /, ''))}${(d.market.sources || []).slice(0, 2).map(x => { const u = x.url || x, t = x.title || new URL(u).hostname;
+        return /^https?:/.test(u) ? ` · <a href="${esc(u)}" target="_blank" rel="noopener">${esc(t.slice(0, 40))}</a>` : ''; }).join('')}</dd>` : ''));
+
+  // purchase brief: built from spec + suppliers + first negotiation round. The hard line (r.max) is never rendered here.
+  $('pbrief').hidden = !s.item;
+  if (s.item) { const u = (s.unit || 'unit').replace(/s$/, ''), sup = d.suppliers || [], r0 = (d.rounds || [])[0] || d.haggle;
+    const soft = r0 && (r0.best_final ?? r0.trial);
+    set('pbriefbody', `<div><h3>What to buy</h3><dl>${[['Item', s.item], ['Spec', [s.size, ...(s.features || [])].filter(Boolean).join(', ') || '—'], ['Quantity', s.quantity + ' ' + s.unit],
+        ['Deadline', s.lead_days ? 'within ' + s.lead_days + ' days' : '—'], ['Budget', s.budget ? money(s.budget) : '—'], ['Ship to', s.ship_to || '—'],
+        ['Your target', s.target_price ? money(s.target_price) + ' per ' + u : 'none set']].map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>
+      <div><h3>Who we're calling</h3>${sup.length ? `<p class="lead">Shortlisted ${sup.length} supplier${sup.length > 1 ? 's' : ''}</p><ul>${sup.map(x => `<li>${esc(x.name)}</li>`).join('')}</ul>` : '<p class="empty">Building the shortlist…</p>'}</div>
+      <div><h3>Questions Fo asks every supplier</h3><ul><li>Unit price and unit</li><li>Minimum order</li><li>Lead time</li><li>Shipping</li><li>Extra fees</li><li>Duty</li></ul></div>
+      <div><h3>Negotiation strategy</h3><ul>${r0 ? `<li>Open at ${money(r0.open)} per ${esc(u)}</li><li>Soft line ${money(soft)} per ${esc(u)}</li>` : '<li>Set once quotes are in</li>'}
+        <li>Use the best rival quote as leverage</li>${d.market?.typical != null ? `<li>Market typical ${money(d.market.typical)} per ${esc(u)}</li>` : ''}</ul>
+        <p class="guard">Walk-away price stays with Buyline — never shared with Fo.</p></div>`);
+  }
+
+  // morning briefing: Orpheus audio when there is some, the text either way
+  const b = d.briefing;
+  $('briefcard').hidden = !b;
+  if (b) {
+    $('brieftext').textContent = b.text; $('play').hidden = !b.audio;
+    $('voice').textContent = b.audio ? 'read by Orpheus' : '';
+    const src = b.audio ? b.audio + '?v=' + b.text.length + (d.updated || '').replace(/:/g, '') : '';
+    if (b.audio && $('audio').dataset.text !== b.text) { $('audio').dataset.text = b.text; $('audio').src = src; }
+  }
+
+  $('memcard').hidden = !(d.memory && d.memory.length);
+  if (d.memory) set('mem', d.memory.slice(0, 3).map(m => `<li>${esc(m)}</li>`).join('') + (d.memory.length > 3 ? `<li class="mute">and ${d.memory.length - 3} more</li>` : ''));
+
+  $('ordcard').hidden = !orders.length;
+  const STOPS = ['ordered', 'shipped', 'delivered'];
+  set('orders', orders.slice().reverse().map(o => { const k = STOPS.indexOf(o.status), h = o.history[o.history.length - 1];
+    return `<li><span class="po">${esc(o.po)}<small>${fmtDate(o.ordered)}</small></span>
+      <span class="what"><span>${esc(o.supplier)}, ${money(o.total)}</span><small title="${esc(o.item)}">${esc(o.quantity + ' ' + o.unit + ' of ' + o.item)}</small></span>
+      <span class="stops${o.late ? ' is-late' : ''}${o.status === 'cancelled' ? ' is-cancelled' : ''}" title="${esc(h.at + ': ' + h.note)}">${STOPS.map((x, j) => `<span class="${j <= k ? 'on' : ''}">${x}</span>`).join('')}</span>
+      <span class="eta">${o.late ? '<span class="late">Late</span>' : ''}${o.status === 'cancelled' ? '<span class="cx">Cancelled</span>' : o.status === 'delivered' ? 'Delivered' : 'ETA ' + fmtDate(o.eta)}</span>
+      <span class="oc">${['delivered', 'cancelled'].includes(o.status) ? '' : `<span class="acts">${cancelUI('o:' + o.po, 'Cancel', o.po)}</span>`}</span></li>`; }).join(''));
+
+  set('raw', [
+    s.raw || s.intake ? `<div><h3>What was asked</h3><pre>${esc(s.intake || s.raw)}</pre></div>` : '',
+    ...(d.calls || []).map(c => `<div><h3>${esc(c.name)}, ${c.kind === 'negotiate' ? 'negotiation' : 'quote'} call at ${esc(c.at)}</h3><p>${esc(c.request)}</p>${c.transcript ? `<pre>${esc(c.transcript)}</pre>` : ''}</div>`),
+    d.po ? `<div><h3>Purchase order ${esc(d.po.number)}</h3><p>${esc(d.po.body)}</p><pre>${esc(d.po.sent)}</pre></div>` : '',
+    d.memory_saved ? `<div><h3>Saved to memory</h3><pre>${esc(d.memory_saved)}</pre></div>` : '',
+  ].join('') || '<p class="empty">Nothing yet.</p>');
+}
+const au = $('audio'), pb = $('play');
+pb.onclick = () => au.paused ? au.play() : au.pause();
+au.onplay = () => { pb.classList.add('on'); pb.lastChild.textContent = 'Pause'; };
+au.onpause = au.onended = () => { pb.classList.remove('on'); pb.lastChild.textContent = 'Play briefing'; };
+// cancel: inline confirm (never window.confirm). cancelAsk = which button is asking: 'run' | 'pick' | 'o:<po>'
+let cancelAsk = '', cancelMsg = '';
+const cancelUI = (k, label, po = '') => cancelAsk === k
+  ? `<span class="confirm">Cancel this order? <button type="button" class="go danger" data-po="${esc(po)}" onclick="doCancel(this.dataset.po)">Yes, cancel</button><button type="button" onclick="askCancel('')">Keep it</button></span>`
+  : `<button type="button" data-k="${esc(k)}" onclick="askCancel(this.dataset.k)">${label}</button>`;
+function askCancel(k) { cancelAsk = k; cancelMsg = ''; refresh(); }
+async function doCancel(po) {
+  cancelAsk = '';
+  try { const r = await fetch('cancel', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(po ? {po} : {})});
+    const j = await r.json().catch(() => ({})); cancelMsg = r.ok ? '' : (j.error || `Cancel failed (${r.status}).`); }
+  catch (e) { cancelMsg = 'Could not reach serve.py: ' + e.message; }
+  refresh();
+}
+let ok = ''; // approve card: '' | 'sending' | 'no' | error text
+async function approve() {
+  ok = 'sending'; refresh();
+  try { const r = await fetch('approve', {method:'POST'}); const j = await r.json().catch(() => ({}));
+    ok = r.ok && j.stage === 'ordered' ? '' : (j.error || j.stderr || `Approve failed (${r.status}${j.stage ? ', still at ' + j.stage : ''}).`); }
+  catch (e) { ok = 'Could not reach serve.py: ' + e.message; }
+  refresh();
+}
+// views: #suppliers and #settings; anything else is the order dashboard
+function route() {
+  const v = ['suppliers', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'order';
+  for (const k of ['order', 'suppliers', 'settings']) $('v-' + k).hidden = k !== v;
+  document.querySelectorAll('.nav a[data-v]').forEach(a => a.toggleAttribute('aria-current', a.dataset.v === v && (v !== 'order' || a.hash !== '#ordcard')));
+}
+addEventListener('hashchange', route); route();
+
+function renderSuppliers(d) {
+  const sup = d.suppliers || [], q = Object.fromEntries((d.quotes || []).map(x => [x.id, x])), mem = d.memory || [], u = (d.spec?.unit || 'unit').replace(/s$/, '');
+  set('supcount', sup.length ? `${sup.length} on file` : '');
+  if (sup.length) set('suptbl', `<table><thead><tr><th>Supplier</th><th>Phone</th><th>Orders email</th><th>Quote</th><th>Min order</th><th>Lead time</th><th>Landed total</th></tr></thead><tbody>${sup.map(s => { const x = q[s.id];
+    return `<tr><td><span class="av" style="background:${['#2e4fd6','#1e7b50','#b86f00','#c2412d','#5b6577'][(s.id || s.name || 'A').charCodeAt(0) % 5]}">${esc((s.name || '?').split(/\s+/).pop().slice(0, 2).toUpperCase())}</span><b>${esc(s.name)}</b>${d.recommendation?.supplier === s.id ? ' <span class="mute">· picked</span>' : ''}</td><td>${esc(s.phone || '—')}</td><td>${esc(s.email || '—')}</td><td>${x ? money(x.unit_price) + '/' + esc(u) : '—'}</td><td>${x?.min_order ?? '—'}</td><td>${x ? x.lead_days + ' days' : '—'}</td><td>${x ? money(x.total) : '—'}</td></tr>`; }).join('')}</tbody></table>`);
+  // purchase brief photo (Unsplash, hotlinked): wire spool for wire/cable, a workshop otherwise
+  const ph = $('pphoto'), src = 'https://images.unsplash.com/photo-' + (/wire|cable|awg/i.test(d.spec?.item || '') ? '1645084102549-e766a3a24827' : '1530046614490-89e6f776b83b') + '?w=400&q=70&auto=format';
+  if (d.spec?.item && ph.dataset.src !== src) { ph.dataset.src = src; ph.src = src; ph.alt = d.spec.item; ph.hidden = false; ph.onerror = () => { ph.hidden = true; }; }
+  $('supmemcard').hidden = !mem.length; set('supmem', mem.map(m => `<li>${esc(m)}</li>`).join(''));
+  set('s-env', `<dt>Fo calls</dt><dd>${esc(d.fo || 'stub')}</dd><dt>Cognee memory</dt><dd>${d.memory_on === false ? 'off' : 'on'}</dd><dt>Market check</dt><dd>${d.market && !d.market.error ? 'on' : 'off'}</dd>`);
+}
+
+// settings: per-browser defaults that prefill the new order form
+const SET_KEY = 'buyline-settings';
+function loadSettings() { try { return JSON.parse(localStorage.getItem(SET_KEY)) || {}; } catch { return {}; } }
+function applySettings() {
+  const st = loadSettings();
+  $('s-ship').value = st.ship || ''; $('s-budget').value = st.budget || '';
+  if (st.budget) $('budget').value = st.budget;
+  if (st.ship) $('req').value = $('req').value.replace(/ship to [^,\n]*/i, 'ship to ' + st.ship);
+}
+function saveSettings(e) {
+  e.preventDefault();
+  const st = {ship: $('s-ship').value.trim(), budget: $('s-budget').value.trim()};
+  try { localStorage.setItem(SET_KEY, JSON.stringify(st)); $('s-saved').textContent = 'Saved. New orders will use these.'; } catch { $('s-saved').textContent = 'This browser blocked saving.'; }
+  applySettings();
+}
+applySettings();
+{ const q = new URLSearchParams(location.search).get('q'); if (q) { $('req').value = q; wantNew = true; } } // from the front page's quote box
+
+refresh(); setInterval(refresh, 1000);
+</script>
+</body>
+</html>

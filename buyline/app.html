@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buyline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f4f0; --panel:#ffffff; --panel-2:#faf9f6; --ink:#15171c; --ink-2:#3b3f48; --muted:#6c707a; --faint:#a3a6ad;
+  --line:#e6e3dc; --line-2:#efede8;
+  --agent:#6a4fd8; --agent-bg:#f1edff; --agent-line:#d9cffc;
+  --fo:#0c8f80; --fo-bg:#e4f6f3; --fo-line:#b5e5dd;
+  --you:#c46a0a; --you-bg:#fdf1e3; --you-line:#f3d3ab;
+  --good:#1b7f45; --good-bg:#e5f5ea; --bad:#b93c16; --bad-bg:#fcebe4; --warn:#a46a00; --warn-bg:#fdf4dc;
+  --shadow:0 1px 2px rgba(20,20,30,.04),0 4px 16px rgba(20,20,30,.05);
+  --shadow-lg:0 10px 40px rgba(20,20,30,.16);
+  --side:#121318; --side-ink:#e8e8ec; --side-muted:#8b8d96; --side-line:#24262d;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1014; --panel:#17181d; --panel-2:#1b1c22; --ink:#ececf0; --ink-2:#c9cad1; --muted:#9295a0; --faint:#62656f;
+  --line:#2a2c33; --line-2:#22242a;
+  --agent:#a18bff; --agent-bg:#221d38; --agent-line:#3b3166;
+  --fo:#3cc9b5; --fo-bg:#12302c; --fo-line:#1f5049;
+  --you:#f0a24a; --you-bg:#33240f; --you-line:#5a3f17;
+  --good:#4fd08a; --good-bg:#15301f; --bad:#ff8a63; --bad-bg:#3a1e14; --warn:#f2c14e; --warn-bg:#352a0e;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25); --shadow-lg:0 10px 40px rgba(0,0,0,.5);
+  --side:#0a0b0e; --side-line:#1d1f25;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1014; --panel:#17181d; --panel-2:#1b1c22; --ink:#ececf0; --ink-2:#c9cad1; --muted:#9295a0; --faint:#62656f;
+  --line:#2a2c33; --line-2:#22242a;
+  --agent:#a18bff; --agent-bg:#221d38; --agent-line:#3b3166;
+  --fo:#3cc9b5; --fo-bg:#12302c; --fo-line:#1f5049;
+  --you:#f0a24a; --you-bg:#33240f; --you-line:#5a3f17;
+  --good:#4fd08a; --good-bg:#15301f; --bad:#ff8a63; --bad-bg:#3a1e14; --warn:#f2c14e; --warn-bg:#352a0e;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25); --shadow-lg:0 10px 40px rgba(0,0,0,.5);
+  --side:#0a0b0e; --side-line:#1d1f25;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12.5px}
+.serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400;letter-spacing:-.01em}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.side{background:var(--side);color:var(--side-ink);padding:22px 16px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-.02em;padding:0 6px}
+.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#7c5cff,#14b8a6);display:grid;place-items:center}
+.logo small{display:block;font-weight:400;font-size:11.5px;color:var(--side-muted);letter-spacing:0}
+.new-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:#111;border:0;border-radius:10px;padding:10px;font-weight:600}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-h{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--side-muted);padding:0 8px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--side-ink);text-decoration:none;font-size:13.5px}
+.nav a:hover{background:#1c1e25}
+.nav a.on{background:#22242c}
+.nav .dot{width:7px;height:7px;border-radius:50%;background:var(--side-muted);flex:none}
+.nav .dot.live{background:#3cc9b5;box-shadow:0 0 0 3px rgba(60,201,181,.18)}
+.nav .dot.wait{background:#f0a24a}
+.nav .sub{margin-left:auto;font-size:11.5px;color:var(--side-muted)}
+.side-foot{margin-top:auto;border-top:1px solid var(--side-line);padding-top:14px;font-size:12px;color:var(--side-muted);display:flex;flex-direction:column;gap:8px}
+.fo-conn{display:flex;align-items:center;gap:8px;color:var(--side-ink)}
+.fo-conn i{width:8px;height:8px;border-radius:50%;background:#3cc9b5}
+
+main{min-width:0;padding:22px 32px 120px}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.crumb{color:var(--muted);font-size:13px}
+.crumb b{color:var(--ink);font-weight:600}
+.spacer{flex:1}
+.mode{display:inline-flex;align-items:center;gap:7px;font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink-2)}
+.mode i{width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.mode.live i{background:var(--good)}
+.ghost{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:6px 11px;font-size:12.5px;color:var(--ink-2)}
+a.ghost{text-decoration:none;display:inline-block}
+.acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.ghost:hover{border-color:var(--faint)}
+
+/* ---------- request header + rail ---------- */
+.req-head{display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:22px}
+.req-title h1{margin:0;font-size:40px;line-height:1.05}
+.req-title .meta{color:var(--muted);margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+.headline{margin-left:auto;text-align:right}
+.headline .k{font-size:12px;color:var(--muted)}
+.headline .v{font-size:34px;line-height:1.1}
+.headline .s{font-size:12.5px;color:var(--good)}
+
+.rail{list-style:none;margin:0 0 22px;padding:16px 18px;display:grid;grid-template-columns:repeat(8,1fr);gap:0;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow-x:auto}
+.rail li{position:relative;padding:0 10px 0 0;min-width:96px}
+.rail .bar{height:4px;border-radius:4px;background:var(--line-2);margin-bottom:10px;overflow:hidden}
+.rail .bar b{display:block;height:100%;width:0;background:var(--ink);transition:width .5s}
+.rail li.done .bar b{width:100%}
+.rail li.now .bar b{width:55%;background:linear-gradient(90deg,var(--agent),var(--fo));animation:pulse 1.6s ease-in-out infinite}
+.rail li.ask .bar b{width:100%;background:var(--you)}
+.rail .t{font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px}
+.rail .t .who{font-size:10px;font-weight:600;padding:1px 6px;border-radius:999px}
+.who.agent{background:var(--agent-bg);color:var(--agent)}
+.who.fo{background:var(--fo-bg);color:var(--fo)}
+.who.you{background:var(--you-bg);color:var(--you)}
+.rail .d{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail li.todo .t{color:var(--faint)}
+.rail li.ask .d{color:var(--you);font-weight:600}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 12px;font-size:13.5px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-color:var(--ink);font-weight:600}
+.tabs .c{font-size:11px;color:var(--faint);margin-left:4px}
+
+/* ---------- live tab ---------- */
+.live{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,1fr);gap:22px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.card-h h3{margin:0;font-size:14px;font-weight:600}
+.card-h .x{margin-left:auto;font-size:12px;color:var(--muted)}
+.card-b{padding:16px 18px}
+
+.legend{display:flex;gap:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:8px;height:8px;border-radius:50%}
+
+.feed{padding:6px 18px 10px}
+#feed{max-height:calc(100vh - 150px);overflow-y:auto;scroll-behavior:smooth}
+.ev{display:grid;grid-template-columns:32px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--line-2);animation:in .35s ease}
+.ev:last-child{border-bottom:0}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.av{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:none}
+.av.agent{background:var(--agent-bg);color:var(--agent)}
+.av.fo{background:var(--fo-bg);color:var(--fo)}
+.av.you{background:var(--you-bg);color:var(--you)}
+.av svg{width:17px;height:17px}
+.ev-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ev-h .n{font-weight:600;font-size:13px}
+.ev-h .k{font-size:11.5px;color:var(--muted)}
+.ev-h .tm{margin-left:auto;font-size:11.5px;color:var(--faint)}
+.ev-t{font-size:14px;margin-top:2px;color:var(--ink)}
+.ev.think .ev-t{color:var(--ink-2)}
+.thought{margin-top:8px;border-left:2px solid var(--agent-line);padding:2px 0 2px 12px;color:var(--ink-2);font-size:13.5px}
+.thought p{margin:0 0 6px}
+.thought p:last-child{margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;border:1px solid var(--line);background:var(--panel-2);border-radius:999px;padding:3px 9px;color:var(--ink-2)}
+.chip b{font-weight:600;color:var(--ink)}
+.chip.bad{background:var(--bad-bg);border-color:transparent;color:var(--bad)}
+.chip.good{background:var(--good-bg);border-color:transparent;color:var(--good)}
+.chip.warn{background:var(--warn-bg);border-color:transparent;color:var(--warn)}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-2)}
+.status i{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.status.live{color:var(--fo);background:var(--fo-bg);border-color:transparent}
+.status.live i{background:var(--fo);animation:pulse 1s infinite}
+.status.done{color:var(--good);background:var(--good-bg);border-color:transparent}
+.status.done i{background:var(--good)}
+.status.bad{color:var(--bad);background:var(--bad-bg);border-color:transparent}
+.status.bad i{background:var(--bad)}
+.status.ask{color:var(--you);background:var(--you-bg);border-color:transparent}
+.status.ask i{background:var(--you)}
+.mini{margin-top:10px;border:1px solid var(--line);border-radius:11px;background:var(--panel-2);padding:12px 14px}
+.mini-row{display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+.mini-row .l{color:var(--muted);font-size:11.5px;display:block}
+.transcript{margin-top:10px;border:1px solid var(--fo-line);background:var(--fo-bg);border-radius:11px;padding:10px 12px;font-size:13px;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.transcript .ln{display:grid;grid-template-columns:70px 1fr;gap:8px}
+.transcript .sp{font-weight:600;font-size:12px;color:var(--fo)}
+.transcript .sp.them{color:var(--ink-2)}
+.wave{display:inline-flex;gap:2px;align-items:center;height:14px;margin-left:4px}
+.wave i{width:2px;background:var(--fo);border-radius:2px;animation:wv 1s ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:.15s}.wave i:nth-child(3){animation-delay:.3s}.wave i:nth-child(4){animation-delay:.45s}
+@keyframes wv{0%,100%{height:3px}50%{height:13px}}
+details.more{margin-top:8px}
+details.more summary{cursor:pointer;color:var(--muted);font-size:12.5px;list-style:none}
+details.more summary::before{content:"▸ ";font-size:10px}
+details.more[open] summary::before{content:"▾ "}
+details.more pre{white-space:pre-wrap;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0 0;font-size:12px;color:var(--ink-2)}
+.ev.ask .ev-t{font-weight:600}
+.cta{display:inline-flex;align-items:center;gap:8px;margin-top:10px;background:var(--ink);color:var(--bg);border:0;border-radius:10px;padding:9px 14px;font-weight:600;font-size:13px}
+
+/* board */
+.board{display:flex;flex-direction:column;gap:16px;position:sticky;top:16px}
+.best{padding:18px}
+.best .k{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.best .v{font-size:46px;line-height:1;margin:8px 0 4px}
+.best .w{font-weight:600}
+.best .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line-2)}
+.best .grid .l{font-size:11.5px;color:var(--muted)}
+.best .grid .n{font-weight:600}
+.best .grid .n.g{color:var(--good)}
+.plist{display:flex;flex-direction:column}
+.prow{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:11px 18px;border-top:1px solid var(--line-2)}
+.prow:first-child{border-top:0}
+.prow .ini{width:28px;height:28px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--ink-2)}
+.prow.rec .ini{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.prow .nm{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .sb{font-size:11.5px;color:var(--muted)}
+.prow .pr{text-align:right}
+.prow .pr .t{font-weight:600}
+.prow .pr .u{font-size:11.5px;color:var(--muted)}
+.prow.out .nm,.prow.out .pr .t{color:var(--faint);text-decoration:line-through}
+.mkt{padding:16px 18px}
+.mbar{position:relative;height:34px;margin:14px 4px 6px}
+.mbar .track{position:absolute;top:14px;left:0;right:0;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--good-bg),var(--line),var(--bad-bg))}
+.mbar .tick{position:absolute;top:6px;width:2px;height:22px;background:var(--faint)}
+.mbar .pin{position:absolute;top:0;transform:translateX(-50%);font-size:10.5px;font-weight:600;white-space:nowrap}
+.mbar .pin::after{content:"";display:block;width:12px;height:12px;border-radius:50%;margin:3px auto 0;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line)}
+.mbar .pin.deal{color:var(--good)}.mbar .pin.deal::after{background:var(--good)}
+.mbar .pin.cap{color:var(--you);top:auto;bottom:-22px}.mbar .pin.cap::after{background:var(--you);margin:0 auto 3px;order:-1}
+.mlab{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:18px}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid var(--line-2);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.rec td{background:var(--good-bg)}
+tr.dim td{color:var(--faint)}
+td .sub{font-size:11.5px;color:var(--muted)}
+.score{display:inline-flex;align-items:center;gap:6px}
+.score .b{width:46px;height:5px;border-radius:5px;background:var(--line-2);overflow:hidden}
+.score .b i{display:block;height:100%;background:var(--agent)}
+s{color:var(--faint)}
+
+/* brief */
+.brief{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.brief section{padding:18px 20px;border-top:1px solid var(--line-2)}
+.brief section:nth-child(odd){border-right:1px solid var(--line-2)}
+.brief h4{margin:0 0 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:13.5px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.brief ul{margin:0;padding-left:18px}
+.brief li{margin:3px 0}
+.lock{margin-top:10px;font-size:12px;color:var(--agent);background:var(--agent-bg);border-radius:9px;padding:8px 10px;display:flex;gap:8px;align-items:center}
+
+/* intake */
+.intake{max-width:980px}
+.intake h1{font-size:44px;margin:6px 0 4px;line-height:1.05}
+.intake .lede{color:var(--muted);margin:0 0 24px;font-size:15px}
+.drop{border:1.5px dashed var(--line);border-radius:16px;background:var(--panel);padding:26px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;cursor:pointer;transition:border-color .2s,background .2s}
+.drop:hover,.drop.over{border-color:var(--agent);background:var(--agent-bg)}
+.drop .ic{width:46px;height:46px;border-radius:12px;background:var(--agent-bg);color:var(--agent);display:grid;place-items:center}
+.drop b{display:block;font-size:15px}
+.drop span{color:var(--muted);font-size:13px}
+.file-chip{display:none;margin-top:10px}
+.or{display:flex;align-items:center;gap:12px;color:var(--faint);font-size:12px;margin:16px 0}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+textarea.need{width:100%;min-height:84px;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px 16px;resize:vertical;font-size:15px}
+textarea.need:focus,.field input:focus,.field select:focus{outline:2px solid var(--agent-line);border-color:var(--agent)}
+.fields{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.field input,.field select{width:100%;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 11px}
+.field .pair{display:flex;gap:6px}
+.sec{margin-top:26px}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.sec-h h2{margin:0;font-size:17px}
+.sec-h p{margin:0;color:var(--muted);font-size:13px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.opt{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:14px 16px;text-align:left;display:flex;flex-direction:column;gap:4px}
+.opt b{font-size:14px;display:flex;align-items:center;gap:8px}
+.opt span{color:var(--muted);font-size:12.5px}
+.opt.on{border-color:var(--agent);box-shadow:0 0 0 3px var(--agent-bg)}
+.opt .tag{font-size:10.5px;font-weight:600;color:var(--agent);background:var(--agent-bg);padding:1px 7px;border-radius:999px}
+.row2{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-top:12px}
+.box{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:14px 16px}
+.box h4{margin:0 0 4px;font-size:13.5px}
+.box .hint{color:var(--muted);font-size:12.5px;margin:0 0 10px}
+.count{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.count button{border:1px solid var(--line);background:var(--panel-2);border-radius:9px;padding:6px 12px;font-size:13px}
+.count button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mylist{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.mylist label{display:flex;align-items:center;gap:8px}
+.mylist .sub{color:var(--muted);font-size:12px;margin-left:auto}
+.add{display:flex;gap:6px;margin-top:8px}
+.add input{flex:1;border:1px solid var(--line);background:var(--panel-2);border-radius:9px;padding:7px 10px;font-size:12.5px}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rule{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:12px 14px;font-size:13px}
+.rule span{display:block;color:var(--muted);font-size:12px}
+.start{display:flex;align-items:center;gap:14px;margin-top:26px;flex-wrap:wrap}
+.primary{background:linear-gradient(135deg,#6a4fd8,#0c8f80);color:#fff;border:0;border-radius:12px;padding:13px 22px;font-weight:600;font-size:15px;box-shadow:0 6px 20px rgba(106,79,216,.25)}
+.start p{margin:0;color:var(--muted);font-size:12.5px;max-width:520px}
+.err{color:var(--bad);font-size:13px}
+
+/* decision sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(10,10,15,.42);backdrop-filter:blur(3px);display:none;z-index:20}
+.sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,100%);width:min(980px,100vw);max-height:92vh;overflow:auto;background:var(--panel);border-radius:20px 20px 0 0;box-shadow:var(--shadow-lg);z-index:21;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.sheet.open{transform:translate(-50%,0)}
+.sheet-bg.open{display:block}
+.sheet-h{padding:22px 26px 6px;display:flex;gap:12px;align-items:flex-start}
+.sheet-h h2{margin:0;font-size:30px;line-height:1.1}
+.sheet-h p{margin:6px 0 0;color:var(--muted)}
+.x-btn{margin-left:auto;border:1px solid var(--line);background:var(--panel-2);border-radius:9px;width:32px;height:32px}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;padding:16px 26px}
+.pick{border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;background:var(--panel);display:flex;flex-direction:column;gap:6px;position:relative}
+.pick.on{border-color:var(--good);box-shadow:0 0 0 3px var(--good-bg)}
+.pick[disabled]{opacity:.55;cursor:not-allowed}
+.pick .rb{position:absolute;top:12px;right:12px;width:16px;height:16px;border-radius:50%;border:2px solid var(--line)}
+.pick.on .rb{border-color:var(--good);background:radial-gradient(var(--good) 45%,transparent 50%)}
+.pick .nm{font-weight:600}
+.pick .tot{font-size:26px;line-height:1}
+.pick .sub{font-size:12px;color:var(--muted)}
+.pick .badge{align-self:flex-start;font-size:10.5px;font-weight:700;color:var(--good);background:var(--good-bg);padding:2px 8px;border-radius:999px}
+.why{padding:0 26px}
+.why ul{margin:0;padding:12px 16px 12px 32px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;font-size:13px;color:var(--ink-2)}
+.why li{margin:3px 0}
+.po{display:grid;grid-template-columns:1.3fr 1fr;gap:12px;padding:16px 26px}
+.po pre{margin:0;white-space:pre-wrap;font-size:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--ink-2)}
+.pay{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px;display:flex;flex-direction:column;gap:8px}
+.pay .ln{display:flex;justify-content:space-between;gap:10px}
+.pay .ln span{color:var(--muted)}
+.sheet-f{display:flex;gap:10px;align-items:center;padding:14px 26px 24px;flex-wrap:wrap}
+.sheet-f .note{color:var(--muted);font-size:12.5px;margin-right:auto;max-width:440px}
+.approve{background:var(--good);color:#fff;border:0;border-radius:12px;padding:12px 20px;font-weight:600}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(10px);transition:.25s;z-index:30}
+.toast.on{opacity:1;transform:none}
+.empty{color:var(--muted);text-align:center;padding:40px 10px}
+.hide{display:none!important}
+
+@media (max-width:1180px){.live{grid-template-columns:1fr}.board{position:static}.fields{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;align-items:center;flex-wrap:wrap;padding:12px 16px;gap:10px}
+  .side .nav,.side-foot{display:none}
+  .new-btn{margin-left:auto;padding:7px 12px}
+  main{padding:16px 16px 120px}
+  .req-title h1,.intake h1{font-size:30px}
+  .headline{margin-left:0;text-align:left}
+  .rail{grid-template-columns:repeat(8,minmax(96px,1fr))}
+  .seg,.rules,.row2,.brief,.po{grid-template-columns:1fr}
+  .brief section:nth-child(odd){border-right:0}
+  .fields{grid-template-columns:1fr 1fr}
+  .table-wrap{overflow-x:auto}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><div class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h6"/></svg></div><div>Buyline<small>Your AI buyer</small></div></div>
+    <button class="new-btn" data-go="new">+ New request</button>
+    <nav class="nav">
+      <div class="nav-h">Requests</div>
+      <a href="#" class="on" data-go="run" id="nav-run"><i class="dot live" id="nav-dot"></i><span id="nav-title">12AWG copper wire</span><span class="sub" id="nav-sub"></span></a>
+      <a href="#" data-go="new"><i class="dot"></i>Takeout containers<span class="sub">ordered</span></a>
+      <a href="#" data-go="new"><i class="dot"></i>Cat6 cable<span class="sub">ordered</span></a>
+    </nav>
+    <nav class="nav">
+      <div class="nav-h">Workspace</div>
+      <a href="#" data-tab="orders">Orders</a>
+      <a href="#" data-tab="suppliers">Supplier book</a>
+      <a href="#">Settings</a>
+    </nav>
+    <div class="side-foot">
+      <div class="fo-conn"><i></i>Fo connected</div>
+      <div>Calls, email and payments run through Fo. Nothing is ordered or paid without your OK.</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="crumb" id="crumb">Requests / <b>REQ-1042</b></div>
+      <div class="spacer"></div>
+      <span class="mode" id="mode"><i></i><span>Design preview · simulated run</span></span>
+      <button class="ghost" id="speed">Speed 1×</button>
+      <button class="ghost" id="replay">Replay</button>
+      <button class="ghost" id="theme" title="Toggle theme">◐</button>
+    </div>
+
+    <!-- ============ NEW REQUEST ============ -->
+    <section id="view-new" class="intake hide">
+      <div class="crumb">New request</div>
+      <h1 class="serif">What do you need to buy?</h1>
+      <p class="lede">Drop in whatever you have. Buyline reads it, writes the brief, finds suppliers, and has Fo call, email and negotiate. You make the final call.</p>
+
+      <label class="drop" id="drop">
+        <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg></div>
+        <div><b>Upload an invoice, price list, spec sheet or email</b><span>PNG, JPG, PDF, CSV or TXT · last month's invoice works best</span>
+          <div class="file-chip chip" id="file-chip"></div></div>
+        <input type="file" id="file" accept=".png,.jpg,.jpeg,.pdf,.txt,.csv" hidden>
+      </label>
+      <div class="or">or describe it</div>
+      <textarea class="need" id="need" placeholder="e.g. 500 meters of 12AWG THHN copper wire, black, delivered to our Berkeley shop">500 meters of 12AWG THHN copper wire, black, for a shop rewire</textarea>
+      <div class="fields">
+        <div class="field"><label>Quantity</label><div class="pair"><input id="f-qty" value="500" inputmode="decimal"><select id="f-unit"><option>meters</option><option>feet</option><option>pieces</option><option>cases</option></select></div></div>
+        <div class="field"><label>Needed within</label><div class="pair"><input id="f-days" value="14" inputmode="numeric"><select><option>days</option></select></div></div>
+        <div class="field"><label>Budget (total)</label><input id="f-budget" value="$500"></div>
+        <div class="field"><label>Target price (optional)</label><input id="f-target" placeholder="$ per unit"></div>
+        <div class="field"><label>Ship to</label><input id="f-ship" value="Berkeley, CA"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h2>Who should we ask?</h2><p>Buyline can research the market, use suppliers you already trust, or both.</p></div>
+        <div class="seg" id="src-mode">
+          <button class="opt on" data-v="ai"><b>Let Buyline find suppliers <span class="tag">Recommended</span></b><span>Searches distributors near you, scores each on stock, minimum order, distance and reachability, then contacts the best.</span></button>
+          <button class="opt" data-v="mine"><b>Only my suppliers</b><span>Use the suppliers in your book or ones you add below. No market search.</span></button>
+          <button class="opt" data-v="both"><b>Both</b><span>Your suppliers plus the best new ones Buyline finds. Good for keeping incumbents honest.</span></button>
+        </div>
+        <div class="row2">
+          <div class="box">
+            <h4>How many to contact</h4>
+            <p class="hint">More quotes find a better price but take longer. Auto picks a number from the order's size and how many good candidates exist.</p>
+            <div class="count" id="count">
+              <button class="on" data-v="auto">Auto</button><button data-v="3">3</button><button data-v="5">5</button><button data-v="8">8</button><button data-v="12">12</button>
+            </div>
+          </div>
+          <div class="box">
+            <h4>Your suppliers</h4>
+            <p class="hint">Always included when checked.</p>
+            <div class="mylist" id="mylist">
+              <label><input type="checkbox" checked> Summit Conductor Supply <span class="sub">last order Mar · $0.86/m</span></label>
+              <label><input type="checkbox"> Harbor Line Electric <span class="sub">2 past quotes</span></label>
+            </div>
+            <div class="add"><input id="add-name" placeholder="Name"><input id="add-contact" placeholder="Phone or email"><button class="ghost" id="add-btn" type="button">Add</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h2>Ground rules</h2><p>What Buyline and Fo may and may not do.</p></div>
+        <div class="rules">
+          <div class="rule"><input type="checkbox" checked><div><b>Negotiate for me</b><span>Up to 2 rounds. Walk-away price stays with Buyline, never told to Fo.</span></div></div>
+          <div class="rule"><input type="checkbox" checked disabled><div><b>Ask me before ordering</b><span>Fo never commits on a call. The PO goes only after you approve.</span></div></div>
+          <div class="rule"><input type="checkbox" checked><div><b>Pay with Fo's single-use card</b><span>Fo texts you item, total and store before any payment.</span></div></div>
+        </div>
+      </div>
+
+      <div class="start">
+        <button class="primary" id="go">Start sourcing →</button>
+        <p>Fo will introduce itself as an AI assistant on every call, and every call is recorded.</p>
+        <span class="err" id="start-err"></span>
+      </div>
+    </section>
+
+    <!-- ============ RUN ============ -->
+    <section id="view-run">
+      <div class="req-head">
+        <div class="req-title">
+          <h1 class="serif" id="title">500 meters of 12AWG copper wire</h1>
+          <div class="meta" id="meta"></div>
+        </div>
+        <div class="headline" id="headline"></div>
+      </div>
+
+      <ol class="rail" id="rail"></ol>
+
+      <div class="tabs" id="tabs">
+        <button data-tab="live" class="on">Live</button>
+        <button data-tab="brief">Brief</button>
+        <button data-tab="suppliers">Suppliers <span class="c" id="c-sup"></span></button>
+        <button data-tab="quotes">Quotes <span class="c" id="c-q"></span></button>
+        <button data-tab="comms">Calls &amp; emails <span class="c" id="c-c"></span></button>
+        <button data-tab="orders">Order</button>
+      </div>
+
+      <div data-pane="live" class="live">
+        <div class="card">
+          <div class="card-h"><h3>What's happening</h3>
+            <div class="legend x"><span><i style="background:var(--agent)"></i>Buyline agent thinks</span><span><i style="background:var(--fo)"></i>Fo acts</span><span><i style="background:var(--you)"></i>You decide</span></div></div>
+          <div class="feed" id="feed"></div>
+        </div>
+        <div class="board">
+          <div class="card best" id="best"></div>
+          <div class="card"><div class="card-h"><h3>Suppliers in play</h3><span class="x" id="plist-x"></span></div><div class="plist" id="plist"></div></div>
+          <div class="card mkt" id="mkt"></div>
+        </div>
+      </div>
+
+      <div data-pane="brief" class="card hide">
+        <div class="card-h"><h3>Purchase brief</h3><span class="x">Written by the Buyline agent · handed to Fo before every call</span><button class="ghost" id="dl">Download .md</button></div>
+        <div class="brief" id="brief"></div>
+      </div>
+
+      <div data-pane="suppliers" class="card hide">
+        <div class="card-h"><h3>Supplier research</h3><span class="x" id="sup-x"></span></div>
+        <div class="table-wrap"><table id="sup-t"></table></div>
+      </div>
+
+      <div data-pane="quotes" class="card hide">
+        <div class="card-h"><h3>Quotes, ranked by landed cost</h3><span class="x">price × quantity you must buy + shipping + fees + duty</span></div>
+        <div class="table-wrap"><table id="q-t"></table></div>
+      </div>
+
+      <div data-pane="comms" class="card hide">
+        <div class="card-h"><h3>Every call and email Fo made</h3><span class="x">our instructions to Fo, and what Fo reported back</span></div>
+        <div class="feed" id="comms"></div>
+      </div>
+
+      <div data-pane="orders" class="card hide">
+        <div class="card-h"><h3>Order</h3></div>
+        <div class="card-b" id="order"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="sheet-bg" id="sheet-bg"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================================================================
+   Buyline UI. Two modes:
+   - live: served next to state.json by serve.py; polls state.json and posts /start, /approve, /not-now.
+   - preview: no state.json (or ?preview): plays a scripted, clearly labelled simulated run.
+   Renders from one view model built by adapt(state). Optional new state fields the backend can add:
+     sourcing: {mode, target, reason, found:[{id,name,source,location,distance,stock,channels,score,status,why}]}
+     events:   [{at, actor:"agent"|"fo"|"you", kind:"think"|"act"|"result"|"ask", title, text, chips}]
+   Without them, events are derived from calls / quotes / rounds / recommendation.
+   ====================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = (n, d = 2) => n == null || isNaN(n) ? '—' : '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d});
+const money0 = n => n == null ? '—' : '$' + Math.round(n).toLocaleString('en-US');
+const unit1 = u => (u || 'unit').replace(/s$/, '');
+const ini = n => (n || '?').split(/\s+/).filter(w => /[A-Za-z0-9]/.test(w[0])).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+const ICON = {
+  agent: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>',
+  fo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  you: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+};
+const WHO = {agent: 'Buyline agent', fo: 'Fo', you: 'You'};
+const KIND = {think: 'thinking', act: 'action', result: 'result', ask: 'needs you'};
+
+/* ---------------- view model ---------------- */
+const RAIL = [['intake', 'Request', 'agent'], ['brief', 'Brief', 'agent'], ['sourcing', 'Sourcing', 'agent'], ['outreach', 'Outreach', 'fo'],
+  ['negotiate', 'Negotiate', 'fo'], ['decide', 'Your decision', 'you'], ['order', 'Order', 'fo'], ['track', 'Track', 'fo']];
+const STAGE_IDX = {need: 1, suppliers: 2, calling: 3, quotes: 3, negotiate: 4, approve: 5, ordered: 7};
+
+function flags(q, spec) {
+  const f = [];
+  if (q.unit_price == null) f.push(['no usable quote', 'bad']);
+  else {
+    if (spec.lead_days && q.lead_days && q.lead_days > spec.lead_days) f.push([`${q.lead_days} days misses the ${spec.lead_days}-day deadline`, 'bad']);
+    if (q.min_order > spec.quantity) f.push([`min order ${q.min_order.toLocaleString()} > ${spec.quantity.toLocaleString()} needed`, 'bad']);
+    if (spec.budget && q.total > spec.budget) f.push([`${money0(q.total)} is over the ${money0(spec.budget)} budget`, 'bad']);
+  }
+  return f;
+}
+
+function adapt(st) {
+  const spec = st.spec || {};
+  const quotes = (st.quotes || []).map(q => ({...q, flags: flags(q, spec)}));
+  const calls = st.calls || [];
+  const viable = quotes.filter(q => q.total != null && !q.flags.length).sort((a, b) => a.total - b.total);
+  const rec = st.recommendation ? st.recommendation.supplier : viable[0]?.id || null;  // before the pick: best viable so far
+  const found = st.sourcing?.found?.length ? st.sourcing.found
+    : (st.suppliers || []).map(s => ({...s, source: s.source || 'yours', status: 'shortlisted'}));
+  const byId = Object.fromEntries(found.map(s => [s.id, s]));
+  const shortlist = found.filter(s => s.status === 'shortlisted');
+  const status = {};
+  for (const s of shortlist) status[s.id] = ['queued', ''];
+  for (const c of calls) {
+    const live = isLive(c);
+    if (c.kind === 'negotiate') status[c.supplier] = live ? ['negotiating', 'live'] : ['negotiated', 'done'];
+    else if (c.status === 'no answer') status[c.supplier] = ['no answer', 'bad'];
+    else if (live) status[c.supplier] = [c.channel === 'email' ? 'emailing' : c.status === 'dialing' ? 'dialing' : 'on the call', 'live'];
+  }
+  for (const q of quotes) {
+    const neg = calls.some(c => c.kind === 'negotiate' && c.supplier === q.id && !/dial|talk|on the call/.test(c.status || ''));
+    if (status[q.id]?.[1] !== 'live') status[q.id] = q.unit_price == null ? ['no quote', 'bad'] : neg ? ['negotiated', 'done'] : ['quoted', 'done'];
+  }
+  const stage = st.stage || 'need';
+  let idx = STAGE_IDX[stage] ?? 0;
+  if (stage === 'ordered') idx = 7;
+  const recQ = quotes.find(q => q.id === rec);
+  return {st, spec, quotes, calls, rec, recQ, found, byId, shortlist, status, stage, idx,
+    rounds: st.rounds || (st.haggle ? [st.haggle] : []), market: st.market && !st.market.error ? st.market : null,
+    events: st.events?.length ? st.events.map(e => {
+      const c = e.call || (e.call_index != null ? calls[e.call_index] : null);
+      return c ? {...e, ...callView(c, quotes)} : e;
+    }) : deriveEvents(st, spec, quotes, calls, found, shortlist)};
+}
+const isLive = c => /dial|talk|on the call|queued|sending|no answer/.test(c.status || '');
+function callView(c, quotes) {
+  const live = isLive(c), q = quotes.find(q => q.id === c.supplier);
+  return {actor: 'fo', kind: 'act', at: c.at, channel: c.channel || 'phone', live, status: c.status, request: c.request, transcript: c.transcript,
+    title: (c.kind === 'negotiate' ? `Negotiating with ${c.name}` : c.channel === 'email' ? `Emailing ${c.name} for a quote` : `Calling ${c.name} for a quote`) + (c.channel === 'sample' ? ' (sample)' : ''),
+    quote: !live && c.kind === 'quote' && q ? q : null};
+}
+
+function deriveEvents(st, spec, quotes, calls, found, shortlist) {
+  const ev = [], u = unit1(spec.unit);
+  if (spec.item) ev.push({actor: 'agent', kind: 'result', title: 'Understood the request',
+    text: spec.source === 'photo' ? 'Read the uploaded invoice photo.' : spec.source === 'document' ? 'Read the uploaded document.' : 'From your typed request.',
+    chips: [['Item', spec.what || spec.item], ['Qty', `${spec.quantity?.toLocaleString()} ${spec.unit}`], ['Within', spec.lead_days ? spec.lead_days + ' days' : '—'], ['Budget', money0(spec.budget)], ['Ship to', spec.ship_to || '—']]});
+  if (st.stage !== 'need') {
+    ev.push({actor: 'agent', kind: 'result', title: 'Wrote the purchase brief', text: 'What to buy, who to call, six questions every supplier must answer, and the negotiation plan. The walk-away price stays private.', link: 'brief'});
+    ev.push({actor: 'agent', kind: 'result', title: `Shortlisted ${shortlist.length} supplier${shortlist.length === 1 ? '' : 's'}`, text: st.sourcing?.reason || 'From your supplier book.', chips: shortlist.map(s => [null, s.name])});
+  }
+  if (st.memory?.length) ev.push({actor: 'agent', kind: 'think', title: 'Checked what we paid before', text: st.memory.slice(0, 2).join(' ')});
+  if (st.market && !st.market.error) ev.push({actor: 'agent', kind: 'result', title: 'Checked the market price', text: st.market.note || '',
+    chips: [['Low', money(st.market.low)], ['Typical', money(st.market.typical)], ['High', money(st.market.high)]]});
+  for (const c of calls) ev.push(callView(c, quotes));
+  if (quotes.length && STAGE_IDX[st.stage] >= 3 && !calls.some(c => isLive(c) && c.kind === 'quote')) {
+    const why = (st.recommendation?.why || []).filter(w => !/^Negotiated|held at|^Pick|^Catching/.test(w));
+    ev.push({actor: 'agent', kind: 'think', title: 'Compared quotes on landed cost', text: why.join(' ') || 'Ranked every quote by what we would actually pay.'});
+  }
+  for (const r of (st.rounds || [])) ev.push({actor: 'agent', kind: 'think', title: `Round ${r.round}: plan for ${r.supplier}`,
+    text: `Their price ${money(r.their)}. Lever ${money(r.target)}. Open at ${money(r.open)}, raise only after they move, best and final ${money(r.best_final)}. Walk-away price stays here. Outcome: ${r.final != null ? money(r.final) + ', ' + r.result : 'waiting'}.`});
+  if (st.recommendation && STAGE_IDX[st.stage] >= 5) {
+    const pick = (st.recommendation.why || [])[0] || '';
+    ev.push({actor: 'agent', kind: st.stage === 'approve' ? 'ask' : 'result', title: st.recommendation.supplier ? pick : 'No supplier fits every constraint', text: (st.recommendation.why || []).slice(1).filter(w => /Catching|Negotiated|held/.test(w)).join(' ')});
+  }
+  if (st.po) ev.push({actor: 'fo', kind: 'act', channel: 'email', title: `Emailed purchase order ${st.po.number || ''} to ${st.po.supplier_name || st.po.supplier}`, text: st.po.sent || '', request: st.po.body});
+  return ev;
+}
+
+/* ---------------- render ---------------- */
+let VM = null, TAB = 'live', SHEET_PICK = null, MODE = 'preview';
+
+function render(st) {
+  VM = adapt(st);
+  const {spec, idx, stage} = VM;
+  $('title').textContent = spec.quantity ? `${spec.quantity.toLocaleString()} ${spec.unit} of ${spec.item}` : 'New request';
+  $('nav-title').textContent = spec.item || 'New request';
+  $('meta').innerHTML = [spec.ship_to && `Ship to ${esc(spec.ship_to)}`, spec.lead_days && `Needed within ${spec.lead_days} days`, spec.budget && `Budget ${money0(spec.budget)}`,
+    spec.target_price && `Target ${money(spec.target_price)}/${unit1(spec.unit)}`, st.updated && `Updated ${esc(st.updated)}`].filter(Boolean).map(x => `<span>${x}</span>`).join('');
+  renderHeadline(); renderRail(); renderFeed(); renderBoard(); renderBrief(); renderSuppliers(); renderQuotes(); renderComms(); renderOrder();
+  $('nav-dot').className = 'dot ' + (stage === 'approve' ? 'wait' : stage === 'ordered' ? '' : 'live');
+  $('nav-sub').textContent = stage === 'approve' ? 'needs you' : stage === 'cancelled' || st.decision === 'cancelled' ? 'cancelled' : stage === 'ordered' ? 'ordered' : 'working';
+  $('c-sup').textContent = VM.found.length || ''; $('c-q').textContent = VM.quotes.length || ''; $('c-c').textContent = VM.calls.length + (st.po ? 1 : '') || '';
+  if (stage === 'approve' && !SHEET_DISMISSED && !$('sheet').classList.contains('open')) openSheet();
+}
+
+function renderHeadline() {
+  const {recQ, spec, stage} = VM;
+  if (stage === 'cancelled' || VM.st.decision === 'cancelled') { $('headline').innerHTML = `<div class="k">Status</div><div class="v serif">Cancelled</div><div class="s">${VM.st.po ? `${esc(VM.st.po.number || 'The order')} was cancelled. No payment goes out; tell the supplier.` : 'Sourcing stopped. Nothing was ordered.'}</div>${VM.st.po?.number ? `<div class="acts"><a class="ghost" href="po/${encodeURIComponent(VM.st.po.number)}.pdf" target="_blank" rel="noopener" data-dl-po>Download PO (PDF)</a></div>` : ''}`; return; }
+  if (!recQ) { $('headline').innerHTML = `<div class="k">Status</div><div class="v serif">${stage === 'need' ? 'Reading your request' : 'Working on it'}</div>${cancelBtn()}`; return; }
+  const saved = recQ.first_price ? (recQ.first_price - recQ.unit_price) * Math.max(spec.quantity, recQ.min_order) : 0;
+  $('headline').innerHTML = `<div class="k">${stage === 'ordered' ? 'Ordered from' : 'Best deal so far'} · ${esc(recQ.name)}</div>
+    <div class="v serif num">${money(recQ.total)}</div>${saved > 0 ? `<div class="s">Fo talked them down ${money(saved)}</div>` : ''}${orderActions()}${cancelBtn()}`;
+}
+/* cancel: inline confirm, no browser dialog. Mid-run it stops the server's run (POST /cancel {}); after the PO it cancels that order ({po}). */
+let CONFIRM = null;
+function cancelBtn() {
+  const {stage, st} = VM;
+  if (MODE === 'preview' || ['approve', 'ordered', 'cancelled'].includes(stage)) return '';
+  return CONFIRM === 'run' ? `<div class="acts"><span style="font-size:13px;color:var(--muted)">Stop sourcing? Nothing has been ordered.</span> <button class="ghost" data-cancel-yes>Yes, stop</button> <button class="ghost" data-cancel-no>Keep going</button></div>`
+    : `<div class="acts"><button class="ghost" data-cancel="run">Cancel sourcing</button></div>`;
+}
+function orderActions() {
+  const {stage, st} = VM;
+  if (MODE === 'preview' || stage !== 'ordered' || st.decision === 'cancelled' || !st.po?.number) return '';
+  const po = st.po.number;
+  return `<div class="acts"><a class="ghost" href="po/${encodeURIComponent(po)}.pdf" target="_blank" rel="noopener" data-dl-po>Download PO (PDF)</a> ${CONFIRM === po
+    ? `<span style="font-size:13px;color:var(--muted)">Cancel ${esc(po)}? Fo will not be told; you tell the supplier.</span> <button class="ghost" data-cancel-yes="${esc(po)}">Yes, cancel order</button> <button class="ghost" data-cancel-no>Keep it</button>`
+    : `<button class="ghost" data-cancel="${esc(po)}">Cancel order</button>`}</div>`;
+}
+async function cancel(po) {
+  try {
+    const r = await fetch('cancel', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(po && po !== 'run' ? {po} : {})});
+    const j = await r.json().catch(() => ({}));
+    toast(r.ok ? (po && po !== 'run' ? `${po} cancelled` : 'Sourcing stopped') : (j.error || 'Could not cancel'));
+    if (r.ok) poll();
+  } catch (err) { toast('Server not reachable'); }
+}
+
+function railDetail(key) {
+  const {spec, found, shortlist, quotes, calls, rounds, recQ, st} = VM;
+  switch (key) {
+    case 'intake': return spec.quantity ? `${spec.quantity.toLocaleString()} ${spec.unit}` : '';
+    case 'brief': return '6 questions · plan set';
+    case 'sourcing': return st.sourcing?.found ? `${found.length} found → ${shortlist.length} picked` : `${shortlist.length} suppliers`;
+    case 'outreach': { const n = quotes.filter(q => q.unit_price != null).length; return `${n} of ${shortlist.length} quotes`; }
+    case 'negotiate': { const saved = recQ?.first_price ? (recQ.first_price - recQ.unit_price) * spec.quantity : 0; return rounds.length ? `${rounds.length} round${rounds.length > 1 ? 's' : ''}${saved ? ' · −' + money0(saved) : ''}` : ''; }
+    case 'decide': return VM.stage === 'approve' ? 'needs you' : VM.idx > 5 ? 'approved' : '';
+    case 'order': return st.po ? (st.po.number || 'PO sent') : '';
+    case 'track': return st.po ? 'Fo follows up' : '';
+  }
+}
+
+function renderRail() {
+  $('rail').innerHTML = RAIL.map(([key, label, who], i) => {
+    const cls = i < VM.idx ? 'done' : i === VM.idx ? (key === 'decide' ? 'ask' : 'now') : 'todo';
+    const d = i <= VM.idx ? railDetail(key) : '';
+    return `<li class="${cls}"><div class="bar"><b></b></div><div class="t">${label} <span class="who ${who}">${who === 'agent' ? 'AI' : who === 'fo' ? 'Fo' : 'You'}</span></div><div class="d">${esc(d) || '&nbsp;'}</div></li>`;
+  }).join('');
+}
+
+function evHTML(e, i) {
+  const icon = e.actor === 'fo' && e.channel === 'email' ? ICON.mail : ICON[e.actor];
+  let body = '';
+  if (e.kind === 'think' && e.text) body += `<div class="thought">${String(e.text).split(/\n+/).map(p => `<p>${esc(p)}</p>`).join('')}</div>`;
+  else if (e.text) body += `<div class="ev-t" style="color:var(--ink-2);font-size:13.5px">${esc(e.text)}</div>`;
+  if (e.chips?.length) body += `<div class="chips">${e.chips.map(([k, v, c]) => `<span class="chip ${c || ''}">${k ? esc(k) + ' <b>' + esc(v) + '</b>' : esc(v)}</span>`).join('')}</div>`;
+  if (e.lines?.length) body += `<div class="transcript">${e.lines.map(([who, t]) => `<div class="ln"><span class="sp ${who === 'Fo' ? '' : 'them'}">${esc(who)}</span><span>${esc(t)}</span></div>`).join('')}${e.live ? '<div class="ln"><span class="sp">…</span><span class="wave"><i></i><i></i><i></i><i></i></span></div>' : ''}</div>`;
+  if (e.quote) { const q = e.quote; body += `<div class="mini"><div class="mini-row"><div><span class="l">Unit price</span><b class="num">${money(q.first_price || q.unit_price)}</b>/${unit1(VM.spec.unit)}</div><div><span class="l">Min order</span>${q.min_order?.toLocaleString() || '—'}</div><div><span class="l">Lead time</span>${q.lead_days ?? '—'} days</div><div><span class="l">Shipping</span>${q.shipping ? money(q.shipping) : 'included'}</div><div><span class="l">Landed</span><b class="num">${money(q.first_price ? q.first_price * Math.max(VM.spec.quantity, q.min_order) + (q.shipping || 0) : q.total)}</b></div></div>${q.flags?.length ? `<div class="chips">${q.flags.map(([t, c]) => `<span class="chip ${c}">${esc(t)}</span>`).join('')}</div>` : ''}</div>`; }
+  if (!e.lines && (e.request || e.transcript)) body += `<details class="more"><summary>${e.transcript ? 'What Fo reported' : 'Instructions to Fo'}</summary>${e.transcript ? `<pre>${esc(e.transcript)}</pre>` : ''}${e.request ? `<pre>${esc(e.request)}</pre>` : ''}</details>`;
+  if (e.link === 'brief') body += `<button class="ghost" style="margin-top:9px" data-tab="brief">Open the brief</button>`;
+  if (e.kind === 'ask' && VM.stage === 'approve') body += `<button class="cta" data-open-sheet>Review and approve →</button>`;
+  const st = e.live ? `<span class="status live"><i></i>${esc(e.status || 'live')}</span>` : e.kind === 'ask' && VM.stage === 'approve' ? '<span class="status ask"><i></i>waiting for you</span>' : '';
+  return `<div class="ev ${e.kind}" data-i="${i}"><div class="av ${e.actor}">${icon}</div><div>
+    <div class="ev-h"><span class="n">${WHO[e.actor]}</span><span class="k">${e.actor === 'fo' ? (e.channel === 'email' ? 'email' : e.channel === 'sample' ? 'sample call' : 'phone') : KIND[e.kind]}</span>${st}<span class="tm">${esc(e.at || '')}</span></div>
+    <div class="ev-t">${esc(e.title)}</div>${body}</div></div>`;
+}
+
+let lastFeed = '';
+function renderFeed() {
+  const html = VM.events.length ? VM.events.map(evHTML).join('') : '<div class="empty">Nothing yet.</div>';
+  if (html === lastFeed) return;
+  const open = [...$('feed').querySelectorAll('details[open]')].map(d => d.closest('.ev')?.dataset.i);
+  const f = $('feed'), n = f.children.length;
+  const atEnd = f.scrollHeight - f.scrollTop - f.clientHeight < 120;
+  f.innerHTML = html; lastFeed = html;
+  if (atEnd) f.scrollTop = f.scrollHeight;
+  open.forEach(i => $('feed').querySelector(`.ev[data-i="${i}"] details`)?.setAttribute('open', ''));
+  [...$('feed').children].forEach((el, i) => { if (i < n) el.style.animation = 'none'; });
+}
+
+function renderBoard() {
+  const {recQ, spec, shortlist, status, quotes, rec, market, stage} = VM;
+  const totals = quotes.filter(q => q.total != null).map(q => q.total);
+  const first = recQ?.first_price ? recQ.first_price * Math.max(spec.quantity, recQ.min_order) + (recQ.shipping || 0) : null;
+  $('best').innerHTML = recQ ? `<div class="k">${stage === 'ordered' ? 'Ordered' : stage === 'approve' ? 'Recommended · waiting for you' : 'Best deal so far'}</div>
+      <div class="v serif num">${money(recQ.total)}</div><div class="w">${esc(recQ.name)}</div>
+      <div class="sub" style="color:var(--muted);font-size:12.5px">${spec.quantity.toLocaleString()} ${spec.unit} at ${money(recQ.unit_price)}/${unit1(spec.unit)} · ${recQ.lead_days} days</div>
+      <div class="grid"><div><div class="l">vs. first quote</div><div class="n g num">${first ? '−' + money0(first - recQ.total) : '—'}</div></div>
+      <div><div class="l">vs. budget</div><div class="n ${spec.budget >= recQ.total ? 'g' : ''} num">${spec.budget ? (spec.budget >= recQ.total ? money0(spec.budget - recQ.total) + ' under' : money0(recQ.total - spec.budget) + ' over') : '—'}</div></div>
+      <div><div class="l">Trap avoided</div><div class="n num">${totals.length > 1 ? money0(Math.max(...totals) - recQ.total) : '—'}</div></div></div>`
+    : `<div class="k">Best deal so far</div><div class="v serif" style="color:var(--faint)">—</div><div class="sub" style="color:var(--muted);font-size:13px">${quotes.length ? 'Comparing quotes…' : 'Waiting for the first quote.'}</div>`;
+  $('plist-x').textContent = `${shortlist.length} contacted` + (VM.st.sourcing?.found ? ` of ${VM.found.length} found` : '');
+  const order = [...shortlist].sort((a, b) => (quotes.find(q => q.id === a.id)?.total ?? 1e9) - (quotes.find(q => q.id === b.id)?.total ?? 1e9));
+  $('plist').innerHTML = order.map(s => {
+    const q = quotes.find(q => q.id === s.id); const [label, cls] = status[s.id] || ['queued', ''];
+    const out = q && q.flags.length;
+    return `<div class="prow ${s.id === rec ? 'rec' : ''} ${out ? 'out' : ''}"><div class="ini">${ini(s.name)}</div>
+      <div style="min-width:0"><div class="nm">${esc(s.name)}</div><div class="sb">${out ? esc(q.flags[0][0]) : esc([s.source === 'ai' ? 'Found by Buyline' : s.source === 'added' ? 'Added by you' : 'Your supplier', s.location].filter(Boolean).join(' · '))}</div></div>
+      <div class="pr">${q?.total != null ? `<div class="t num">${money0(q.total)}</div><div class="u num">${q.first_price ? `<s>${money(q.first_price)}</s> ` : ''}${money(q.unit_price)}/${unit1(spec.unit)}</div>` : `<span class="status ${cls}"><i></i>${esc(label)}</span>`}</div></div>`;
+  }).join('') || '<div class="empty">Finding suppliers…</div>';
+  if (market) {
+    const lo = Math.min(market.low, recQ?.unit_price ?? market.low) * 0.92, hi = Math.max(market.high, spec.budget ? spec.budget / spec.quantity : 0) * 1.04;
+    const pct = v => ((v - lo) / (hi - lo) * 100).toFixed(1) + '%';
+    const cap = spec.budget ? spec.budget / spec.quantity : null;
+    $('mkt').innerHTML = `<div style="display:flex;align-items:baseline;gap:8px"><h3 style="margin:0;font-size:14px">Market check</h3><span style="color:var(--muted);font-size:12px;margin-left:auto">per ${unit1(spec.unit)}</span></div>
+      <div class="mbar"><div class="track"></div>${['low', 'typical', 'high'].map(k => `<div class="tick" style="left:${pct(market[k])}"></div>`).join('')}
+      ${recQ ? `<div class="pin deal" style="left:${pct(recQ.unit_price)}">Our deal ${money(recQ.unit_price)}</div>` : ''}${cap ? `<div class="pin cap" style="left:${pct(cap)}">Budget ${money(cap)}</div>` : ''}</div>
+      <div class="mlab num"><span>Low ${money(market.low)}</span><span>Typical ${money(market.typical)}</span><span>High ${money(market.high)}</span></div>
+      ${market.note ? `<div style="font-size:12.5px;color:var(--ink-2);margin-top:10px">${esc(market.note)}</div>` : ''}
+      ${market.sources?.length ? `<div style="font-size:12px;color:var(--muted);margin-top:6px">Sources: ${market.sources.slice(0, 3).map(s => s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:inherit">${esc(s.title || s.url)}</a>` : esc(s.title)).join(' · ')}</div>` : ''}`;
+    $('mkt').classList.remove('hide');
+  } else $('mkt').classList.add('hide');
+}
+
+function briefMD() {
+  const {spec, shortlist, rounds} = VM; const u = unit1(spec.unit); const r = rounds[0];
+  return `# Purchase brief: ${spec.quantity} ${spec.unit} of ${spec.item}\n\n## What to buy\n- Item: ${spec.what || spec.item}\n- Quantity: ${spec.quantity} ${spec.unit}\n- Needed within: ${spec.lead_days ?? '—'} days\n- Budget: ${money0(spec.budget)}\n- Ship to: ${spec.ship_to || '—'}\n\n## Who to contact\n${shortlist.map(s => `- ${s.name}${s.location ? ' (' + s.location + ')' : ''}: ${(s.channels || ['phone', 'email']).join(', ')}`).join('\n')}\n\n## Ask every supplier\n- Unit price and the unit it is priced in\n- Minimum order quantity\n- Lead time to ${spec.ship_to || 'us'}\n- Shipping cost\n- Any extra fees (cutting, handling, rush)\n- Import duty if it ships from abroad\n\n## Negotiation plan\n- Lever: the best real rival quote or the last price we paid, stated with its true terms\n${r ? `- Open at ${money(r.open)}/${u}; best and final ${money(r.best_final)}/${u}\n` : ''}- Never commit on the call; the PO follows by email after approval\n- Walk-away price: kept by Buyline, not shared with Fo\n`;
+}
+
+function renderBrief() {
+  const {spec, shortlist, rounds} = VM; const r = rounds[0]; const u = unit1(spec.unit);
+  $('brief').innerHTML = `<section><h4>What to buy</h4><dl class="kv"><dt>Item</dt><dd>${esc(spec.what || spec.item)}</dd><dt>Quantity</dt><dd>${spec.quantity?.toLocaleString()} ${esc(spec.unit)}</dd><dt>Needed within</dt><dd>${spec.lead_days ?? '—'} days</dd><dt>Budget</dt><dd>${money0(spec.budget)}</dd><dt>Ship to</dt><dd>${esc(spec.ship_to || '—')}</dd><dt>Came from</dt><dd>${spec.source === 'photo' ? 'invoice photo' : spec.source === 'document' ? 'uploaded document' : 'typed request'}</dd></dl></section>
+    <section><h4>Who to contact</h4><ul>${shortlist.map(s => `<li><b>${esc(s.name)}</b>${s.location ? ' · ' + esc(s.location) : ''}<div style="color:var(--muted);font-size:12.5px">${esc(s.why || (s.source === 'yours' ? 'From your supplier book' : ''))}</div></li>`).join('')}</ul></section>
+    <section><h4>Ask every supplier</h4><ul><li>Unit price, and the unit it's priced in</li><li>Minimum order quantity</li><li>Lead time to ${esc(spec.ship_to || 'us')}</li><li>Shipping cost</li><li>Extra fees: cutting, handling, rush</li><li>Import duty if it ships from abroad</li></ul></section>
+    <section><h4>Negotiation plan</h4><ul><li>Lever: the best real rival quote, or what we paid last time, stated with its true terms</li>${r ? `<li>Open at <b>${money(r.open)}</b>/${u}, raise only after they move</li><li>Best and final <b>${money(r.best_final)}</b>/${u}</li>` : '<li>Opening and best-and-final prices are set once quotes are in</li>'}<li>Never commit on the call. The PO goes by email after you approve.</li></ul>
+      <div class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Walk-away price stays with the Buyline agent. Fo never hears it.</div></section>`;
+}
+
+function renderSuppliers() {
+  const {found, st, byId, quotes} = VM;
+  const sc = st.sourcing;
+  $('sup-x').textContent = sc?.found ? `${found.length} found · ${VM.shortlist.length} contacted · ${sc.count_why || (sc.target === 'auto' ? 'count chosen automatically' : 'you chose ' + sc.target)}${sc.error ? ' · search problem: ' + sc.error : ''}` : 'From your supplier book';
+  const srcs = sc?.sources?.length ? `<tr><td colspan="5" class="sub">Searched: ${sc.sources.slice(0, 6).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:inherit">${esc(s.title || s.url)}</a>`).join(' · ')}</td></tr>` : '';
+  const demo = VM.st.fo && VM.st.fo !== 'stub' && VM.st.fo !== 'preview' ? '<tr><td colspan="5" class="sub">Demo safety: Fo calls and emails only the test numbers and inbox, never the businesses listed here.</td></tr>' : '';
+  $('sup-t').innerHTML = `<thead><tr><th>Supplier</th><th>Source</th><th>Where</th><th>Fit</th><th>Decision</th></tr></thead><tbody>${demo}${found.map(s => `<tr class="${s.status === 'shortlisted' ? '' : 'dim'}">
+    <td><b>${s.website ? `<a href="${esc(/^https?:/.test(s.website) ? s.website : 'https://' + s.website)}" target="_blank" rel="noopener" style="color:inherit">${esc(s.name)}</a>` : esc(s.name)}</b><div class="sub">${esc([s.type, ...(s.channels || [])].filter(Boolean).join(' · '))}</div></td>
+    <td>${s.source === 'ai' ? '<span class="chip">Found by Buyline</span>' : s.source === 'added' ? '<span class="chip">Added by you</span>' : '<span class="chip">Your book</span>'}</td>
+    <td>${esc(s.location || '—')}${s.distance ? `<div class="sub">${esc(s.distance)}</div>` : ''}</td>
+    <td>${s.score != null ? `<span class="score"><span class="b"><i style="width:${s.score}%"></i></span><span class="num">${s.score}</span></span>` : '—'}${s.stock ? `<div class="sub">${esc(s.stock)}</div>` : ''}</td>
+    <td>${s.status === 'shortlisted' ? '<span class="chip good">Contacted</span>' : '<span class="chip">Skipped</span>'}<div class="sub" style="margin-top:4px">${esc(s.why || '')}</div></td></tr>`).join('')}${srcs}</tbody>`;
+}
+
+function renderQuotes() {
+  const {quotes, spec, rec} = VM; const u = unit1(spec.unit);
+  const sorted = [...quotes].sort((a, b) => (a.flags.length - b.flags.length) || ((a.total ?? 1e9) - (b.total ?? 1e9)));
+  $('q-t').innerHTML = quotes.length ? `<thead><tr><th>Supplier</th><th>Unit price</th><th>Min order</th><th>Lead time</th><th>Shipping · fees · duty</th><th>You'd buy</th><th>Landed</th><th>Verdict</th></tr></thead><tbody>${sorted.map(q => `<tr class="${q.id === rec ? 'rec' : q.flags.length ? 'dim' : ''}">
+    <td><b>${esc(q.name)}</b></td><td class="num">${q.first_price ? `<s>${money(q.first_price)}</s> ` : ''}${money(q.unit_price)}<span class="sub">/${u}</span></td>
+    <td class="num">${q.min_order?.toLocaleString() || '—'}</td><td class="num">${q.lead_days ?? '—'} d</td>
+    <td class="num">${money((q.shipping || 0) + (q.fees || 0) + (q.duty_amt || 0))}</td><td class="num">${Math.max(spec.quantity, q.min_order || 0).toLocaleString()} ${esc(spec.unit)}</td>
+    <td class="num"><b>${money(q.total)}</b></td><td>${q.id === rec ? '<span class="chip good">Recommended</span>' : q.flags.map(([t, c]) => `<span class="chip ${c}">${esc(t)}</span>`).join(' ') || '<span class="chip">Viable</span>'}</td></tr>`).join('')}</tbody>` : '<tbody><tr><td class="empty">No quotes yet.</td></tr></tbody>';
+}
+
+function renderComms() {
+  const ev = VM.events.filter(e => e.actor === 'fo');
+  $('comms').innerHTML = ev.length ? ev.map((e, i) => evHTML({...e, quote: null, lines: e.lines, request: e.request, transcript: e.transcript || (e.lines ? null : e.text)}, 'c' + i)).join('') : '<div class="empty">Fo hasn\'t contacted anyone yet.</div>';
+  $('comms').querySelectorAll('details').forEach(d => d.open = true);
+}
+
+function renderOrder() {
+  const {st, recQ, spec} = VM;
+  if (!st.po) { $('order').innerHTML = `<div class="empty">No order yet. ${VM.stage === 'approve' ? 'The PO is waiting for your approval.' : 'The PO is drafted once a supplier is chosen.'}</div>`; return; }
+  const steps = ['PO emailed', 'Payment confirmed', 'Shipped', 'Delivered'];
+  const at = st.payment === 'confirmed' ? 2 : 1;
+  $('order').innerHTML = `<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="flex:1;min-width:260px"><div style="font-size:12px;color:var(--muted)">${esc(st.po.number || 'Purchase order')}</div><div class="serif" style="font-size:30px">${money(recQ?.total)} · ${esc(recQ?.name || '')}</div>
+    <div style="color:var(--muted);font-size:13px">${spec.quantity.toLocaleString()} ${esc(spec.unit)} · ETA ${recQ?.lead_days ?? '—'} days</div>
+    <ol class="rail" style="grid-template-columns:repeat(4,1fr);margin-top:16px;box-shadow:none">${steps.map((s, i) => `<li class="${i < at ? 'done' : i === at ? 'now' : 'todo'}"><div class="bar"><b></b></div><div class="t">${s}</div></li>`).join('')}</ol></div>
+    <div style="flex:1;min-width:260px"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Email Fo sent</div><pre class="mono" style="white-space:pre-wrap;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px;margin:0">${esc(st.po.body || '')}</pre>
+    <div style="font-size:12.5px;color:var(--muted);margin-top:8px">${esc(st.po.sent || '')}</div>${VM.stage === 'cancelled' || st.decision === 'cancelled' ? '<div class="s" style="margin-top:8px">This order was cancelled.</div>' : orderActions()}</div></div>`;
+}
+
+/* ---------------- decision sheet ---------------- */
+let SHEET_DISMISSED = false;
+function openSheet() {
+  const {quotes, spec, rec, st} = VM; const u = unit1(spec.unit);
+  SHEET_PICK = SHEET_PICK || rec;
+  const viable = [...quotes].sort((a, b) => (a.flags.length - b.flags.length) || ((a.total ?? 1e9) - (b.total ?? 1e9)));
+  const q = quotes.find(q => q.id === SHEET_PICK) || VM.recQ;
+  const why = (st.recommendation?.why || []);
+  const po = q ? `To: ${q.name}\nSubject: Purchase order\n\n${spec.quantity.toLocaleString()} ${spec.unit} of ${spec.what || spec.item}\nUnit price ${money(q.unit_price)}/${u} · total ${money(q.total)}${q.shipping ? ' incl. ' + money(q.shipping) + ' shipping' : ''}\nDelivery within ${q.lead_days} days${spec.ship_to ? ' to ' + spec.ship_to : ''}` : '';
+  $('sheet').innerHTML = `<div class="sheet-h"><div><div class="status ask"><i></i>Your decision</div><h2 class="serif" id="sheet-title" style="margin-top:10px">Buyline recommends ${esc(VM.recQ?.name || '—')} at ${money(VM.recQ?.total)}</h2>
+      <p>Pick any viable option. Nothing is sent until you approve.</p></div><button class="x-btn" data-close-sheet aria-label="Close">✕</button></div>
+    <div class="picks">${viable.map(x => `<button class="pick ${x.id === SHEET_PICK ? 'on' : ''}" data-pick="${esc(x.id)}" ${x.flags.length ? 'disabled' : ''}><span class="rb"></span>
+      ${x.id === rec ? '<span class="badge">Recommended</span>' : x.flags.length ? '<span class="badge" style="color:var(--bad);background:var(--bad-bg)">Ruled out</span>' : '<span class="badge" style="color:var(--ink-2);background:var(--panel-2)">Option</span>'}
+      <span class="nm">${esc(x.name)}</span><span class="tot serif num">${money(x.total)}</span><span class="sub num">${money(x.unit_price)}/${u} · ${x.lead_days ?? '—'} days · min ${x.min_order?.toLocaleString() || 0}</span>
+      ${x.flags.length ? `<span class="sub" style="color:var(--bad)">${esc(x.flags[0][0])}</span>` : ''}</button>`).join('')}</div>
+    <div class="why"><ul>${why.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>
+    <div class="po"><div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Purchase order Fo will email</div><pre class="mono">${esc(po)}</pre></div>
+      <div class="pay"><b>Payment</b><div class="ln"><span>Method</span>Fo single-use card</div><div class="ln"><span>Amount</span><b class="num">${money(q?.total)}</b></div><div class="ln"><span>To</span>${esc(q?.name || '')}</div>
+      <div style="font-size:12px;color:var(--muted)">Fo texts you the item, total and store, and pays only after you reply yes.</div></div></div>
+    <div class="sheet-f"><div class="note">${SHEET_PICK !== rec ? 'You picked a different supplier than the recommendation.' : 'Approving sends the PO. Payment still waits for your yes on Fo.'}</div>
+      <button class="ghost" data-notnow>Not now</button><button class="approve" data-approve>Approve and send PO</button></div>`;
+  $('sheet').classList.add('open'); $('sheet-bg').classList.add('open');
+}
+function closeSheet() { $('sheet').classList.remove('open'); $('sheet-bg').classList.remove('open'); SHEET_DISMISSED = true; }
+
+function toast(t) { $('toast').textContent = t; $('toast').classList.add('on'); setTimeout(() => $('toast').classList.remove('on'), 2600); }
+
+/* ---------------- events ---------------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-tab],[data-go],[data-open-sheet],[data-close-sheet],[data-pick],[data-approve],[data-notnow],[data-cancel],[data-cancel-yes],[data-cancel-no],[data-dl-po],#sheet-bg,.opt,#count button');
+  if (!t) return;
+  if (t.matches('a') && !t.hasAttribute('data-dl-po')) e.preventDefault();
+  if (t.dataset.tab) { showView('run'); setTab(t.dataset.tab); }
+  else if (t.dataset.go) showView(t.dataset.go);
+  else if (t.hasAttribute('data-open-sheet')) { SHEET_DISMISSED = false; openSheet(); }
+  else if (t.hasAttribute('data-close-sheet') || t.id === 'sheet-bg') closeSheet();
+  else if (t.dataset.pick) { SHEET_PICK = t.dataset.pick; openSheet(); }
+  else if (t.hasAttribute('data-approve')) { closeSheet(); await approve(true); }
+  else if (t.hasAttribute('data-notnow')) { closeSheet(); await approve(false); }
+  else if (t.dataset.cancel) { CONFIRM = t.dataset.cancel; renderHeadline(); renderOrder(); }
+  else if (t.hasAttribute('data-cancel-yes')) { const po = t.dataset.cancelYes || CONFIRM; CONFIRM = null; await cancel(po); }
+  else if (t.hasAttribute('data-cancel-no')) { CONFIRM = null; renderHeadline(); renderOrder(); }
+  else if (t.classList.contains('opt')) { t.parentElement.querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o === t)); }
+  else if (t.parentElement.id === 'count') { t.parentElement.querySelectorAll('button').forEach(o => o.classList.toggle('on', o === t)); }
+});
+function setTab(tab) {
+  TAB = tab;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  document.querySelectorAll('[data-pane]').forEach(p => p.classList.toggle('hide', p.dataset.pane !== tab));
+}
+function showView(v) {
+  $('view-new').classList.toggle('hide', v !== 'new'); $('view-run').classList.toggle('hide', v !== 'run');
+  $('crumb').innerHTML = v === 'new' ? 'Requests / <b>New</b>' : 'Requests / <b>REQ-1042</b>';
+  window.scrollTo({top: 0});
+}
+$('dl').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([briefMD()], {type: 'text/markdown'})); a.download = 'purchase-brief.md'; a.click(); };
+$('theme').onclick = () => { const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; };
+
+const ADDED = [];
+$('add-btn').onclick = () => {
+  const name = $('add-name').value.trim(), contact = $('add-contact').value.trim();
+  if (!name) return;
+  const s = {name, contact, on: true}; ADDED.push(s);
+  const l = document.createElement('label');
+  l.innerHTML = `<input type="checkbox" checked> ${esc(name)} <span class="sub">${esc(contact || 'added by you')}</span>`;
+  l.querySelector('input').onchange = e => { s.on = e.target.checked; };
+  $('mylist').appendChild(l); $('add-name').value = ''; $('add-contact').value = '';
+};
+const drop = $('drop'); let FILE = null;
+$('file').onchange = () => pickFile($('file').files[0]);
+['dragover', 'dragenter'].forEach(k => drop.addEventListener(k, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(k => drop.addEventListener(k, e => { e.preventDefault(); drop.classList.remove('over'); if (k === 'drop') pickFile(e.dataTransfer.files[0]); }));
+function pickFile(f) { if (!f) return; FILE = f; $('file-chip').style.display = 'inline-flex'; $('file-chip').innerHTML = `📎 <b>${esc(f.name)}</b> · ${(f.size / 1024).toFixed(0)} KB · Buyline will read it`; }
+
+function requestText() {
+  const v = id => $(id).value.trim();
+  const mode = document.querySelector('#src-mode .on').dataset.v, count = document.querySelector('#count .on').dataset.v;
+  return [v('need'), v('f-qty') && `Quantity ${v('f-qty')} ${$('f-unit').value}`, v('f-days') && `within ${v('f-days')} days`, v('f-budget') && `budget ${v('f-budget').replace(/^\$?/, '$')}`,
+    v('f-target') && `target price ${v('f-target').replace(/^\$?/, '$')} per ${unit1($('f-unit').value)}`, v('f-ship') && `ship to ${v('f-ship')}`].filter(Boolean).join(', ')
+    + `. Sourcing: ${mode === 'ai' ? 'find suppliers' : mode === 'mine' ? 'my suppliers only' : 'my suppliers plus new ones'}, contact ${count === 'auto' ? 'as many as needed' : count}.`;
+}
+$('go').onclick = async () => {
+  $('start-err').textContent = '';
+  if (MODE === 'preview') { showView('run'); setTab('live'); startPreview(); return; }
+  const mode = document.querySelector('#src-mode .on').dataset.v;
+  const body = {request: requestText(), sourcing_mode: mode, target_count: document.querySelector('#count .on').dataset.v,
+    my_suppliers: ADDED.filter(s => s.on).map(({name, contact}) => ({name, [/@/.test(contact) ? 'email' : 'phone']: contact}))};
+  if (FILE && /png|jpe?g|pdf/i.test(FILE.type)) {
+    body.image = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(String(fr.result).split(',')[1]); fr.readAsDataURL(FILE); });
+    body.media_type = FILE.type;
+  } else if (FILE) body.request += '\n\nAttached document:\n' + (await FILE.text()).slice(0, 6000);
+  try {
+    const r = await fetch('start', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+    const j = await r.json();
+    if (!j.ok) { $('start-err').textContent = j.error || 'Could not start'; return; }
+    SHEET_DISMISSED = false; SHEET_PICK = null; showView('run'); setTab('live'); toast('Sourcing started');
+  } catch (err) { $('start-err').textContent = 'Server not reachable: ' + err.message; }
+};
+
+async function approve(yes) {
+  if (MODE === 'preview') { previewApprove(yes); return; }
+  try {
+    const r = await fetch(yes ? 'approve' : 'not-now', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({supplier: SHEET_PICK})});
+    toast(yes ? 'Approved. Fo is sending the PO.' : 'Saved for later. Nothing was sent.');
+    if (r.ok) poll();
+  } catch (err) { toast('Server not reachable'); }
+}
+
+/* ---------------- live polling ---------------- */
+let POLL = null;
+async function poll() {
+  try {
+    const r = await fetch('state.json?' + Date.now(), {cache: 'no-store'});
+    if (!r.ok) throw 0;
+    const st = await r.json();
+    render(st);
+    $('mode').className = 'mode live';
+    $('mode').querySelector('span').textContent = st.fo === 'live' ? 'Live · real Fo calls to test numbers' : st.fo === 'dry' ? 'Live · dry run, Fo sends nothing' : st.fo === 'sample' ? 'Sample · canned supplier calls, no phone' : 'Live · simulated supplier replies';
+  } catch { /* keep last render */ }
+}
+
+/* ---------------- preview script (simulated, labelled) ---------------- */
+const P = {
+  spec: {item: '12AWG copper wire', what: '12AWG THHN copper wire, black', quantity: 500, unit: 'meters', lead_days: 14, budget: 500, ship_to: 'Berkeley, CA', source: 'photo'},
+  found: [
+    {id: 'A', name: 'Harbor Line Electric', source: 'ai', location: 'Oakland, CA', distance: '6 mi', stock: '12AWG THHN in stock', channels: ['phone', 'email'], score: 88, status: 'shortlisted', why: 'Stocks the exact wire, local pickup or next-day delivery'},
+    {id: 'C', name: 'Summit Conductor Supply', source: 'yours', location: 'Richmond, CA', distance: '9 mi', stock: 'You bought from them in March', channels: ['phone', 'email'], score: 86, status: 'shortlisted', why: 'Your supplier: last paid $0.86/m on the uploaded invoice'},
+    {id: 'B', name: 'Kestrel Wire & Cable', source: 'ai', location: 'San Leandro, CA', distance: '14 mi', stock: 'Distributor, sells by the reel', channels: ['phone', 'email'], score: 84, status: 'shortlisted', why: 'Often cheapest per meter; check their minimum order'},
+    {id: 'D', name: 'Redwood Cable Co.', source: 'ai', location: 'Hayward, CA', distance: '22 mi', stock: 'Lists 12AWG THHN', channels: ['phone', 'email'], score: 79, status: 'shortlisted', why: 'Fourth quote for a reliable spread'},
+    {id: 'E', name: 'Bayside Electrical Outlet', source: 'ai', location: 'Emeryville, CA', distance: '5 mi', stock: 'Retail', channels: ['phone'], score: 71, status: 'skipped', why: 'Retail pricing runs ~35% above distributors'},
+    {id: 'F', name: 'Lone Star Wire Depot', source: 'ai', location: 'Dallas, TX', distance: '1,700 mi', stock: 'In stock', channels: ['email'], score: 64, status: 'skipped', why: 'Ships 8–12 days, too close to the deadline'},
+    {id: 'G', name: 'Coastal Industrial Cable', source: 'ai', location: 'San Jose, CA', distance: '45 mi', stock: 'Industrial only', channels: ['phone', 'email'], score: 61, status: 'skipped', why: 'Minimum order 5,000 m'},
+    {id: 'H', name: 'Pioneer Electric Supply', source: 'ai', location: 'Fremont, CA', distance: '28 mi', stock: 'Out of stock online', channels: ['phone'], score: 58, status: 'skipped', why: 'Shows out of stock until next month'},
+    {id: 'I', name: 'WireNow Online', source: 'ai', location: 'Online only', distance: '—', stock: 'Sells 500 ft spools', channels: ['web'], score: 55, status: 'skipped', why: 'No phone or email; checkout only'},
+    {id: 'J', name: 'Delta Conduit & Wire', source: 'ai', location: 'Stockton, CA', distance: '68 mi', stock: 'Unclear', channels: ['phone'], score: 52, status: 'skipped', why: 'Kept as backup if quotes come in high'},
+    {id: 'K', name: 'Golden Spool Trading', source: 'ai', location: 'Shenzhen, CN', distance: 'overseas', stock: 'Factory', channels: ['email'], score: 47, status: 'skipped', why: 'Import duty and 4–6 week lead time'},
+    {id: 'L', name: 'Metro Lighting & Wire', source: 'ai', location: 'Berkeley, CA', distance: '2 mi', stock: 'Lighting focus', channels: ['phone'], score: 44, status: 'skipped', why: 'Carries 14AWG, not 12AWG'},
+  ],
+  market: {low: 0.74, typical: 0.89, high: 1.12, note: 'Copper is up this quarter; distributors price 12AWG THHN between $0.74 and $1.12 a meter at this quantity.', sources: [{title: '2 distributor price lists'}, {title: '1 retail listing'}]},
+};
+const T = () => new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false});
+let PS = null, PT = [], SPEED = 1, PSTEP = 0;
+function pst() { return PS; }
+function push(ev) { PS.events.push({at: T(), ...ev}); return PS.events[PS.events.length - 1]; }
+function q(id, unit_price, min_order, lead_days, shipping = 0) {
+  const s = P.found.find(s => s.id === id); const n = Math.max(500, min_order);
+  return {id, name: s.name, unit_price, min_order, lead_days, shipping, fees: 0, duty: 0, duty_amt: 0, total: +(unit_price * n + shipping).toFixed(2)};
+}
+const CALL_C = [['Fo', "Hi, this is Fo, an AI assistant calling for Buyline procurement. This call is recorded."], ['Summit', 'Sure, what can I do for you?'],
+  ['Fo', 'Following up on 500 meters of 12AWG THHN. Another supplier offered $0.80 a meter, though with a 1,000-meter minimum. Could you do $0.72?'],
+  ['Summit', "72's too low. What's their lead time?"], ['Fo', 'Five days. If I get you to $0.78, can you confirm today?'],
+  ['Summit', 'Hm. Okay, 78, 200-meter minimum, seven days, shipping included.'], ['Fo', "Thank you. I'll report back; the purchase order comes by email after approval. Goodbye."]];
+
+const SCRIPT = [
+  [600, () => { PS.stage = 'need'; push({actor: 'you', kind: 'result', title: 'Uploaded invoice_summit_march.jpg and asked for 500 m of 12AWG wire'}); }],
+  [1600, () => { push({actor: 'agent', kind: 'think', title: 'Reading the invoice', text: 'Line 2: 300 m of 12AWG THHN black at $0.86/m from Summit Conductor Supply, March. Same product; the request overrides the quantity to 500 m.\nThat $0.86 becomes a negotiation lever and puts Summit on the list automatically.'}); }],
+  [1600, () => { PS.spec = P.spec; push({actor: 'agent', kind: 'result', title: 'Understood the request', text: 'Read the uploaded invoice photo.', chips: [['Item', P.spec.what], ['Qty', '500 meters'], ['Within', '14 days'], ['Budget', '$500'], ['Ship to', 'Berkeley, CA'], ['Last paid', '$0.86/m', 'warn']]}); }],
+  [1500, () => { PS.stage = 'suppliers'; push({actor: 'agent', kind: 'result', title: 'Wrote the purchase brief', text: 'What to buy, six questions every supplier must answer, and the negotiation plan. The walk-away price stays private.', link: 'brief'}); }],
+  [1700, () => { PS.sourcing = {mode: 'both', target: 'auto', found: [P.found[1]]}; push({actor: 'agent', kind: 'think', title: 'Searching for suppliers', text: 'Looking for electrical distributors that stock 12AWG THHN within a day\'s delivery of Berkeley, plus your book.\nQueries: "12 AWG THHN wire distributor East Bay", "electrical supply Oakland wire by the meter", "copper building wire wholesale Bay Area".'}); }],
+  [1300, () => { PS.sourcing.found = P.found.slice(0, 7); }],
+  [1300, () => { PS.sourcing.found = P.found; PS.sourcing.reason = 'Found 12 candidates. Scored each on stock match, minimum order, distance and whether Fo can reach them. Auto picked 4: the order is about $450, and four quotes give a reliable spread without slowing things down.';
+    push({actor: 'agent', kind: 'result', title: 'Found 12 suppliers, picked the best 4', text: PS.sourcing.reason, chips: P.found.filter(s => s.status === 'shortlisted').map(s => [null, s.name])}); }],
+  [1100, () => { PS.market = P.market; push({actor: 'agent', kind: 'result', title: 'Checked the market price', text: P.market.note, chips: [['Low', '$0.74'], ['Typical', '$0.89'], ['High', '$1.12']]}); }],
+  [1200, () => { PS.stage = 'calling'; for (const id of ['A', 'C', 'B', 'D']) { const s = P.found.find(s => s.id === id); const c = {supplier: id, name: s.name, kind: 'quote', status: 'dialing', at: T(),
+    request: `Call ${s.name}'s sales desk for Buyline procurement. Ask for a quote on 500 meters of 12AWG THHN copper wire, black, delivered to Berkeley within 14 days: unit price and unit, minimum order, lead time, shipping, extra fees. Do not commit to anything. Report the exact numbers back.`};
+    PS.calls.push(c); push({call: c}); } }],
+  [1800, () => { PS.calls.forEach(c => c.status = c.supplier === 'D' ? 'no answer' : 'on the call'); }],
+  [1500, () => { const c = PS.calls.find(c => c.supplier === 'D'); c.status = 'sending'; c.channel = 'email'; push({actor: 'agent', kind: 'think', title: 'Redwood didn\'t pick up', text: 'Voicemail. Not inventing a price: switching Redwood to email and asking Fo to send the brief\'s questions in writing.'}); }],
+  [1700, () => { PS.calls.find(c => c.supplier === 'A').status = 'quote in'; PS.calls.find(c => c.supplier === 'A').transcript = 'Spoke with Harbor Line Electric. $0.95 per meter, minimum 300 m, 10 days, shipping included.'; PS.quotes.push(q('A', 0.95, 300, 10)); }],
+  [1300, () => { const c = PS.calls.find(c => c.supplier === 'B'); c.status = 'quote in'; c.transcript = 'Spoke with Kestrel Wire & Cable. $0.80 per meter, but minimum order is one 1,000 m reel. 5 days, shipping included.'; PS.quotes.push(q('B', 0.80, 1000, 5)); }],
+  [1300, () => { const c = PS.calls.find(c => c.supplier === 'C'); c.status = 'quote in'; c.transcript = 'Spoke with Summit Conductor Supply. $0.88 per meter, minimum 200 m, 7 days, shipping included.'; PS.quotes.push(q('C', 0.88, 200, 7)); }],
+  [1600, () => { const c = PS.calls.find(c => c.supplier === 'D'); c.status = 'quote in'; c.transcript = 'Redwood Cable Co. replied by email: $0.92 per meter, minimum 500 m, 12 days, $18 shipping.'; PS.quotes.push(q('D', 0.92, 500, 12, 18)); PS.stage = 'quotes'; }],
+  [1500, () => { push({actor: 'agent', kind: 'think', title: 'Comparing on landed cost, not unit price', text: 'Kestrel looks cheapest at $0.80, but their 1,000 m reel means paying $800 for wire we don\'t need. That\'s over budget, so they\'re out.\nSummit is the best that fits: $440. Harbor $475, Redwood $478 with shipping.\nSummit\'s $0.88 is above what you paid in March ($0.86) and above the typical market price. Worth pushing.'}); }],
+  [1700, () => { PS.stage = 'negotiate'; PS.rounds = [{round: 1, supplier: 'Summit Conductor Supply', their: 0.88, target: 0.80, open: 0.72, best_final: 0.82, final: null, result: ''}];
+    push({actor: 'agent', kind: 'think', title: 'Round 1 plan: push Summit', text: 'Lever: Kestrel\'s $0.80, stated honestly with its 1,000 m minimum. Open at $0.72, raise only after they move, trial close at $0.78, best and final $0.82.\nThe $1.00 walk-away stays here. Fo never hears it.'}); }],
+  [1200, () => { PS.calls.push({supplier: 'C', name: 'Summit Conductor Supply', kind: 'negotiate', status: 'on the call', at: T()}); NEG = push({actor: 'fo', kind: 'act', channel: 'phone', live: true, status: 'on the call', title: 'Negotiating with Summit Conductor Supply', lines: []}); }],
+  ...CALL_C.map(l => [1500, () => { NEG.lines.push(l); }]),
+  [900, () => { NEG.live = false; NEG.status = 'done'; const c = PS.calls.find(c => c.kind === 'negotiate'); c.status = 'counter in';
+    const s = PS.quotes.find(q => q.id === 'C'); s.first_price = 0.88; s.unit_price = 0.78; s.total = 390; PS.rounds[0].final = 0.78; PS.rounds[0].result = 'accepted';
+    push({actor: 'agent', kind: 'result', title: 'Summit came down to $0.78: $390 landed', chips: [['Saved', '$50', 'good'], ['Under budget', '$110', 'good'], ['vs. last paid', '−$0.08/m', 'good']]}); }],
+  [1600, () => { PS.rounds.push({round: 2, supplier: 'Harbor Line Electric', their: 0.95, target: 0.78, open: 0.70, best_final: 0.80, final: null, result: ''});
+    push({actor: 'agent', kind: 'think', title: 'Round 2: can the runner-up beat it?', text: 'Harbor can fill the order. Taking Summit\'s $0.78 to them as the lever. If nobody improves, stop.'});
+    const c = {supplier: 'A', name: 'Harbor Line Electric', kind: 'negotiate', status: 'on the call', at: T(), request: 'Call Harbor Line Electric back. Say another supplier offered $0.78 per meter for 500 m of 12AWG THHN. Ask if they can beat it. Open at $0.70; best and final $0.80. Do not commit.'};
+    PS.calls.push(c); push({call: c}); }],
+  [2400, () => { const c = PS.calls.filter(c => c.kind === 'negotiate').pop(); c.status = 'counter in'; c.transcript = 'Called Harbor Line Electric back with the $0.78 offer. They said $0.95 is their floor for under a full reel. Terms unchanged.'; PS.rounds[1].final = 0.95; PS.rounds[1].result = 'held';
+    push({actor: 'agent', kind: 'think', title: 'Harbor held at $0.95. Stopping here.', text: 'Nobody improved in round 2, so another round would just cost time. Summit at $390 is the pick.'}); }],
+  [1300, () => { PS.stage = 'approve'; PS.recommendation = {supplier: 'C', why: ['Pick Summit Conductor Supply: $390.00 landed for 500 m at $0.78, 7 days, shipping included.',
+    'Kestrel Wire & Cable: $0.80 looks lowest, but the 1,000 m minimum means paying $800, over the $500 budget.', 'Redwood Cable Co.: $478 with shipping, 12 days.',
+    'Harbor Line Electric: held at $0.95 ($475) when offered $0.78.', 'Negotiated Summit from $0.88 to $0.78, $0.08 below what you paid in March.']};
+    push({actor: 'agent', kind: 'ask', title: 'Recommend Summit Conductor Supply at $390. Your call.', text: 'Saved $50 off their quote and avoided Kestrel\'s $800 minimum-order trap.'}); }],
+];
+let NEG = null;
+function startPreview() {
+  PT.forEach(clearTimeout); PT = []; SHEET_DISMISSED = false; SHEET_PICK = null; lastFeed = '';
+  PS = {stage: 'need', fo: 'preview', spec: {}, suppliers: [], calls: [], quotes: [], events: [], rounds: [], recommendation: null, po: null, updated: T()};
+  PSTEP = 0; render(PS); step();
+}
+function step() {
+  if (PSTEP >= SCRIPT.length) return;
+  const [ms, fn] = SCRIPT[PSTEP];
+  PT.push(setTimeout(() => { fn(); PS.updated = T(); PSTEP++; render(PS); step(); }, ms / SPEED));
+}
+function previewApprove(yes) {
+  if (!yes) { push({actor: 'you', kind: 'result', title: 'Not now. Nothing was sent.'}); PS.stage = 'approve'; render(PS); return; }
+  const q = PS.quotes.find(q => q.id === (SHEET_PICK || 'C'));
+  push({actor: 'you', kind: 'result', title: `Approved ${q.name} at ${money(q.total)}`});
+  PS.recommendation.supplier = q.id; PS.stage = 'ordered';
+  PS.po = {number: 'PO-1042', supplier: q.id, supplier_name: q.name, body: `To: ${q.name}\nSubject: Purchase order PO-1042\n\n500 meters of 12AWG THHN copper wire, black\nUnit price ${money(q.unit_price)}/meter · total ${money(q.total)}\nDelivery within ${q.lead_days} days to Berkeley, CA\n\nBuyline procurement`, sent: 'Sent by Fo from its own address.'};
+  render(PS);
+  PT.push(setTimeout(() => { push({actor: 'fo', kind: 'act', channel: 'email', title: `Emailed purchase order PO-1042 to ${q.name}`, request: PS.po.body}); render(PS); }, 900 / SPEED));
+  PT.push(setTimeout(() => { push({actor: 'fo', kind: 'ask', title: `Texted you to confirm payment: ${money(q.total)} to ${q.name} on a single-use card`, text: 'Fo pays only after you reply yes.'}); render(PS); }, 2200 / SPEED));
+  PT.push(setTimeout(() => { PS.payment = 'confirmed'; push({actor: 'you', kind: 'result', title: 'Replied yes to Fo'}); push({actor: 'fo', kind: 'result', title: 'Paid. Delivery expected in 7 days; Fo will check in with the supplier until it arrives.'}); render(PS); }, 4200 / SPEED));
+}
+
+$('replay').onclick = () => { if (MODE === 'preview') { showView('run'); setTab('live'); startPreview(); } else poll(); };
+$('speed').onclick = () => { SPEED = SPEED === 1 ? 2 : SPEED === 2 ? 4 : 1; $('speed').textContent = `Speed ${SPEED}×`; };
+
+/* ---------------- boot ---------------- */
+(async function boot() {
+  const forcePreview = new URLSearchParams(location.search).has('preview');
+  let live = false;
+  if (!forcePreview && location.protocol.startsWith('http')) {
+    try { const r = await fetch('state.json?' + Date.now(), {cache: 'no-store'}); live = r.ok && !!(await r.json()).stage; } catch { live = false; }
+  }
+  MODE = live ? 'live' : 'preview';
+  if (live) { $('speed').classList.add('hide'); $('replay').textContent = 'Refresh'; poll(); POLL = setInterval(poll, 1500); }
+  else startPreview();
+})();
+</script>
+</body>
+</html>

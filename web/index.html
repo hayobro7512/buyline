@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Night Shift</title>
+<style>
+  :root { --bg:#0e1116; --fg:#e8eaed; --mute:#9aa0a6; --card:#1a1f27; --acc:#8ab4f8; --bad:#f28b82; }
+  body { margin:0; font:15px/1.45 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; border-bottom:1px solid #2a2f37; }
+  h1 { font-size:20px; margin:0 12px 0 0; } h2 { font-size:16px; margin:0 0 8px; }
+  main { max-width:1200px; margin:auto; padding:16px; display:grid; gap:16px; grid-template-columns:1fr 1fr; }
+  @media (max-width:850px) { main { grid-template-columns:1fr; } }
+  .card { background:var(--card); border-radius:10px; padding:14px; margin-bottom:16px; }
+  button, input, select { font:inherit; padding:8px 12px; border-radius:6px; border:1px solid #3a3f47; background:#232a34; color:var(--fg); }
+  button { cursor:pointer; background:var(--acc); color:#000; border:0; } button:disabled { opacity:.5; }
+  #stats, small { color:var(--mute); }
+  .big { font-size:28px; font-weight:700; } .bad { color:var(--bad); }
+  .nums { display:flex; gap:24px; margin-bottom:8px; }
+  #timeline { list-style:none; padding:0; margin:0; max-height:75vh; overflow:auto; }
+  #timeline li { display:flex; gap:10px; padding:8px; border-radius:8px; margin-bottom:6px; background:#151a21; }
+  #timeline li.flag { outline:1px solid var(--bad); }
+  #timeline img, .flagged img { width:112px; height:84px; object-fit:cover; border-radius:6px; }
+  .ok { color:#81c995; } li button { padding:2px 8px; font-size:13px; margin-top:4px; }
+  .t { color:var(--acc); font-weight:600; } .flag .t { color:var(--bad); }
+  .flagged { display:flex; gap:8px; flex-wrap:wrap; } .flagged figure { margin:0; width:112px; }
+  form { display:flex; gap:8px; } form input { flex:1; }
+  #answer img { width:100%; max-width:480px; border-radius:8px; margin-top:8px; }
+  video { width:160px; border-radius:6px; display:none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🌙 Night Shift</h1>
+  <select id="role" title="who is looking"><option>caregiver</option><option>family</option><option>doctor</option></select>
+  <select id="night"></select>
+  <button id="replay">Replay night</button>
+  <span id="stats">Loading…</span>
+  <span style="flex:1"></span>
+  <video id="v" autoplay playsinline muted></video>
+  <input id="recname" value="night1" size="8" title="folder under nights/">
+  <button id="rec" style="background:#232a34;color:var(--fg)">⏺ Record night</button>
+  <button id="cam" style="background:#232a34;color:var(--fg)">Live camera</button>
+</header>
+<main>
+  <section>
+    <div class="card"><h2>Morning brief</h2><div id="brief"><small>Replay a night to get the brief.</small></div></div>
+    <div class="card"><h2>Ask Night Shift</h2>
+      <form id="ask"><input id="q" placeholder="Did she take her pills?" autocomplete="off"><button>Ask</button></form>
+      <div id="answer"></div></div>
+  </section>
+  <section class="card"><h2>Tonight's events</h2><ul id="timeline"></ul></section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const post = (url, body) => fetch(url, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+let briefShown = null;
+const role = () => $('role').value;
+
+async function refresh() {
+  const night = $('night').value;
+  const d = await (await fetch(`/timeline?role=${role()}&night=` + encodeURIComponent(night))).json();
+  const r = d.replay;
+  $('stats').textContent = (r.running ? `Replaying ${r.night}: ${r.done}/${r.total} · ` : '') +
+    `${d.events} events · ${d.flagged} flagged · ${d.learned} held back as normal (${d.norms} taught) · ${d.improve.running ? 'Cognee improve() running… · ' : d.improve.last ? (d.improve.last.error ? 'improve() error: ' + d.improve.last.error + ' · ' : `improve() done in ${d.improve.last.secs}s (${d.improve.last.stages.length} stages) · `) : ''}${d.cognified}/${d.memories} in Cognee${d.cognifying ? ' (indexing…)' : ''}` +
+    (d.last_error ? ' · error: ' + d.last_error : '');
+  $('replay').disabled = r.running;
+  $('timeline').innerHTML = d.entries.map(e => `<li class="${e.matters ? 'flag' : ''}">${e.id ? `<img src="/snaps/${e.id}.jpg" alt="">` : ''}
+    <div><span class="t">${e.time}</span> ${esc(e.event)} <small>${esc(e.category)}</small>
+    ${e.matters ? `<br><span class="bad">⚠ ${esc(e.why)}</span>` : ''}
+    ${e.learned ? `<br><small class="ok">✓ not alerted: ${esc(e.learned)}</small>` : ''}
+    ${e.matters && role() === 'caregiver' ? `<br><button data-normal="${e.id}">This is normal for her</button>` : ''}</div></li>`).join('')
+    || `<li><small>${role() === 'family' ? 'Family sees the morning brief only.' : 'No events yet.'}</small></li>`;
+  if (!r.running && d.events && briefShown !== night) loadBrief(night);
+}
+
+async function loadBrief(night) {
+  const r = await fetch(`/brief?role=${role()}&night=` + encodeURIComponent(night));
+  if (!r.ok) return;
+  briefShown = night;
+  const b = await r.json();
+  $('brief').innerHTML = `<div class="nums"><div><div class="big">${b.events}</div><small>events</small></div>
+    <div><div class="big bad">${b.flagged}</div><small>flagged</small></div>
+    <div><div class="big ok">${b.learned || 0}</div><small>held back by Cognee</small></div></div>
+    ${b.learned ? `<p class="ok"><b>Cognee improve(): alerts ${b.flagged + b.learned} → ${b.flagged}</b> on this night, from what you marked normal.</p>` : ''}
+    <p>${esc(b.summary)}</p>
+    <div class="flagged">${b.flagged_events.map(e => `<figure>${e.id ? `<img src="/snaps/${e.id}.jpg" alt="">` : ''}
+      <figcaption><small><span class="t bad">${e.time}</span> ${esc(e.why || e.event)}</small></figcaption></figure>`).join('')}</div>
+    <p><small>${esc(b.cloud)}</small></p>`;
+}
+
+$('replay').onclick = async () => {
+  const r = await post('/replay', { night: $('night').value });
+  if (!r.ok) return alertBox((await r.json()).detail);
+  briefShown = null; $('brief').innerHTML = '<small>Watching the night…</small>'; refresh();
+};
+const alertBox = msg => $('stats').textContent = msg;
+$('timeline').onclick = async ev => {
+  const id = ev.target.dataset.normal;
+  if (!id) return;
+  ev.target.disabled = true;
+  await post('/normal', { id });
+  briefShown = null; refresh();
+};
+$('role').onchange = () => { briefShown = null; $('answer').innerHTML = ''; refresh(); };
+$('night').onchange = () => { briefShown = null; $('brief').innerHTML = '<small>Replay a night to get the brief.</small>'; refresh(); };
+
+$('ask').onsubmit = async e => {
+  e.preventDefault();
+  $('answer').innerHTML = '<small>Thinking…</small>';
+  const r = await post('/ask', { q: $('q').value || $('q').placeholder, role: role() });
+  const d = await r.json();
+  const hist = (d.history || []).map(h => `<span class="t">${h.time}</span> ${esc(h.event)}`).join(' · ');
+  $('answer').innerHTML = r.ok ? `<p>${esc(d.answer)} <small>(${d.secs}s)</small></p>
+    ${hist ? `<p><small>Seen: ${hist}</small></p>` : ''}${d.snap ? `<img src="${d.snap}" alt="">` : ''}`
+    : `<p>${esc(d.detail)}</p>`;
+};
+
+// Record night: save a frame every 2 s to nights/<name>/ for replay (no captions while recording).
+let recTimer = null;
+$('rec').onclick = async () => {
+  if (recTimer) { clearInterval(recTimer); recTimer = null; $('rec').textContent = '⏺ Record night'; location.reload(); return; }
+  const v = $('v'), c = document.createElement('canvas'), name = $('recname').value.trim();
+  if (!v.srcObject) v.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
+  v.style.display = 'block';
+  recTimer = setInterval(async () => {
+    if (!v.videoWidth) return;
+    const s = 640 / Math.max(v.videoWidth, v.videoHeight);
+    c.width = v.videoWidth * s; c.height = v.videoHeight * s;
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    const r = await post('/record', { image: c.toDataURL('image/jpeg', 0.8), night: name });
+    const d = await r.json();
+    $('rec').textContent = r.ok ? `⏹ Stop (${d.frames} frames)` : d.detail;
+  }, 2000);
+};
+
+// Live camera: one frame every 5 s; the server skips frames where nothing changed.
+$('cam').onclick = async () => {
+  const v = $('v'), c = document.createElement('canvas');
+  v.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
+  v.style.display = 'block'; $('cam').disabled = true;
+  setInterval(async () => {
+    if (!v.videoWidth) return;
+    const s = 640 / Math.max(v.videoWidth, v.videoHeight);
+    c.width = v.videoWidth * s; c.height = v.videoHeight * s;
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    await post('/frame', { image: c.toDataURL('image/jpeg', 0.65), night: 'live' });
+  }, 5000);
+};
+
+(async () => {
+  const ns = await (await fetch('/nights')).json();
+  $('night').innerHTML = [...ns, 'live'].map(n => `<option>${esc(n)}</option>`).join('');
+  refresh(); setInterval(refresh, 2000);
+})();
+</script>
+</body>
+</html>
